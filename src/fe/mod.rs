@@ -55,7 +55,7 @@ pub struct FeDevice {
     api_version: u16,
 
     name: String,
-    delivery_system_list: Vec<u32>,
+    delivery_system_list: Vec<fe_delivery_system>,
     frequency_range: Range<u32>,
     symbolrate_range: Range<u32>,
     caps: u32,
@@ -69,7 +69,7 @@ impl fmt::Display for FeDevice {
 
         write!(f, "Delivery system:")?;
         for v in &self.delivery_system_list {
-            write!(f, " {}", &DeliverySystemDisplay(*v))?;
+            write!(f, " {}", &v)?;
         }
         writeln!(f, "")?;
 
@@ -343,8 +343,8 @@ impl FeDevice {
     /// - [`FE_HAS_LOCK`]
     /// - [`FE_TIMEDOUT`]
     /// - [`FE_REINIT`]
-    pub fn read_status(&self) -> Result<u32> {
-        let mut result: u32 = FE_NONE;
+    pub fn read_status(&self) -> Result<fe_status> {
+        let mut result: u32 = FE_NONE as u32;
 
         // FE_READ_STATUS
         ioctl_read!(#[inline] ioctl_call, b'o', 69, u32);
@@ -352,7 +352,7 @@ impl FeDevice {
             ioctl_call(self.as_raw_fd(), &mut result as *mut _)
         }.context("FE: read status")?;
 
-        Ok(result)
+        Ok(fe_status::from_repr(result).context("Invalid status")?)
     }
 
     /// Reads and returns a signal strength relative value (DVBv3 API)

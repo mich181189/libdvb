@@ -27,80 +27,89 @@ pub use {
     dtv_property_cmd::*,
 };
 
+use strum::{Display, FromRepr};
 
 /// Frontend capabilities
-mod fe_caps {
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_caps {
     /// There's something wrong at the frontend, and it can't report its capabilities
-    pub const FE_IS_STUPID: u32                     = 0;
+    FE_IS_STUPID = 0,
     /// Can auto-detect frequency spectral band inversion
-    pub const FE_CAN_INVERSION_AUTO: u32            = 0x1;
+    FE_CAN_INVERSION_AUTO = 0x1,
     /// Supports FEC 1/2
-    pub const FE_CAN_FEC_1_2: u32                   = 0x2;
+    FE_CAN_FEC_1_2 = 0x2,
     /// Supports FEC 2/3
-    pub const FE_CAN_FEC_2_3: u32                   = 0x4;
+    FE_CAN_FEC_2_3 = 0x4,
     /// Supports FEC 3/4
-    pub const FE_CAN_FEC_3_4: u32                   = 0x8;
+    FE_CAN_FEC_3_4 = 0x8,
     /// Supports FEC 4/5
-    pub const FE_CAN_FEC_4_5: u32                   = 0x10;
+    FE_CAN_FEC_4_5 = 0x10,
     /// Supports FEC 5/6
-    pub const FE_CAN_FEC_5_6: u32                   = 0x20;
+    FE_CAN_FEC_5_6 = 0x20,
     /// Supports FEC 6/7
-    pub const FE_CAN_FEC_6_7: u32                   = 0x40;
+    FE_CAN_FEC_6_7 = 0x40,
     /// Supports FEC 7/8
-    pub const FE_CAN_FEC_7_8: u32                   = 0x80;
+    FE_CAN_FEC_7_8 = 0x80,
     /// Supports FEC 8/9
-    pub const FE_CAN_FEC_8_9: u32                   = 0x100;
+    FE_CAN_FEC_8_9 = 0x100,
     /// Can auto-detect FEC
-    pub const FE_CAN_FEC_AUTO: u32                  = 0x200;
+    FE_CAN_FEC_AUTO = 0x200,
     /// Supports QPSK modulation
-    pub const FE_CAN_QPSK: u32                      = 0x400;
+    FE_CAN_QPSK = 0x400,
     /// Supports 16-QAM modulation
-    pub const FE_CAN_QAM_16: u32                    = 0x800;
+    FE_CAN_QAM_16 = 0x800,
     /// Supports 32-QAM modulation
-    pub const FE_CAN_QAM_32: u32                    = 0x1000;
+    FE_CAN_QAM_32 = 0x1000,
     /// Supports 64-QAM modulation
-    pub const FE_CAN_QAM_64: u32                    = 0x2000;
+    FE_CAN_QAM_64 = 0x2000,
     /// Supports 128-QAM modulation
-    pub const FE_CAN_QAM_128: u32                   = 0x4000;
+    FE_CAN_QAM_128 = 0x4000,
     /// Supports 256-QAM modulation
-    pub const FE_CAN_QAM_256: u32                   = 0x8000;
+    FE_CAN_QAM_256 = 0x8000,
     /// Can auto-detect QAM modulation
-    pub const FE_CAN_QAM_AUTO: u32                  = 0x10000;
+    FE_CAN_QAM_AUTO = 0x10000,
     /// Can auto-detect transmission mode
-    pub const FE_CAN_TRANSMISSION_MODE_AUTO: u32    = 0x20000;
+    FE_CAN_TRANSMISSION_MODE_AUTO = 0x20000,
     /// Can auto-detect bandwidth
-    pub const FE_CAN_BANDWIDTH_AUTO: u32            = 0x40000;
+    FE_CAN_BANDWIDTH_AUTO = 0x40000,
     /// Can auto-detect guard interval
-    pub const FE_CAN_GUARD_INTERVAL_AUTO: u32       = 0x80000;
+    FE_CAN_GUARD_INTERVAL_AUTO = 0x80000,
     /// Can auto-detect hierarchy
-    pub const FE_CAN_HIERARCHY_AUTO: u32            = 0x100000;
+    FE_CAN_HIERARCHY_AUTO = 0x100000,
     /// Supports 8-VSB modulation
-    pub const FE_CAN_8VSB: u32                      = 0x200000;
+    FE_CAN_8VSB = 0x200000,
     /// Supports 16-VSB modulation
-    pub const FE_CAN_16VSB: u32                     = 0x400000;
+    FE_CAN_16VSB = 0x400000,
     /// Unused
-    pub const FE_HAS_EXTENDED_CAPS: u32             = 0x800000;
+    FE_HAS_EXTENDED_CAPS = 0x800000,
     /// Supports multistream filtering
-    pub const FE_CAN_MULTISTREAM: u32               = 0x4000000;
+    FE_CAN_MULTISTREAM = 0x4000000,
     /// Supports "turbo FEC" modulation
-    pub const FE_CAN_TURBO_FEC: u32                 = 0x8000000;
+    FE_CAN_TURBO_FEC = 0x8000000,
     /// Supports "2nd generation" modulation, e. g. DVB-S2, DVB-T2, DVB-C2
-    pub const FE_CAN_2G_MODULATION: u32             = 0x10000000;
+    FE_CAN_2G_MODULATION = 0x10000000,
     /// Unused
-    pub const FE_NEEDS_BENDING: u32                 = 0x20000000;
+    FE_NEEDS_BENDING = 0x20000000,
     /// Can recover from a cable unplug automatically
-    pub const FE_CAN_RECOVER: u32                   = 0x40000000;
+    FE_CAN_RECOVER = 0x40000000,
     /// Can stop spurious TS data output
-    pub const FE_CAN_MUTE_TS: u32                   = 0x80000000;
+    FE_CAN_MUTE_TS = 0x80000000,
 }
 
 
 /// DEPRECATED: Should be kept just due to backward compatibility
-mod fe_type {
-    pub const FE_QPSK: u32                      = 0;
-    pub const FE_QAM: u32                       = 1;
-    pub const FE_OFDM: u32                      = 2;
-    pub const FE_ATSC: u32                      = 3;
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_type {
+    FE_QPSK = 0,
+    FE_QAM = 1,
+    FE_OFDM = 2,
+    FE_ATSC = 3,
 }
 
 
@@ -192,224 +201,252 @@ impl Default for DiseqcSlaveReply {
 
 
 /// DC Voltage used to feed the LNBf
-mod fe_sec_voltage {
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_sec_voltage {
     /// Output 13V to the LNB. Vertical linear. Right circular.
-    pub const SEC_VOLTAGE_13: u32               = 0;
+    SEC_VOLTAGE_13 = 0,
     /// Output 18V to the LNB. Horizontal linear. Left circular.
-    pub const SEC_VOLTAGE_18: u32               = 1;
+    SEC_VOLTAGE_18 = 1,
     /// Don't feed the LNB with a DC voltage
-    pub const SEC_VOLTAGE_OFF: u32              = 2;
+    SEC_VOLTAGE_OFF = 2,
 }
 
 
-mod fe_sec_tone_mode {
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_sec_tone_mode {
     /// Sends a 22kHz tone burst to the antenna
-    pub const SEC_TONE_ON: u32                  = 0;
+    SEC_TONE_ON = 0,
     /// Don't send a 22kHz tone to the antenna (except if the FE_DISEQC_* ioctl are called)
-    pub const SEC_TONE_OFF: u32                 = 1;
+    SEC_TONE_OFF = 1,
 }
 
 
 /// Type of mini burst to be sent
-mod fe_sec_mini_cmd {
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_sec_mini_cmd {
     /// Sends a mini-DiSEqC 22kHz '0' Tone Burst to select satellite-A
-    pub const SEC_MINI_A: u32                   = 0;
+    SEC_MINI_A = 0,
     /// Sends a mini-DiSEqC 22kHz '1' Data Burst to select satellite-B
-    pub const SEC_MINI_B: u32                   = 1;
+    SEC_MINI_B = 1,
 }
 
 
 /// Enumerates the possible frontend status
-mod fe_status {
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_status {
     /// The frontend doesn't have any kind of lock. That's the initial frontend status
-    pub const FE_NONE: u32                      = 0x00;
+    FE_NONE = 0x00,
     /// Has found something above the noise level
-    pub const FE_HAS_SIGNAL: u32                = 0x01;
+    FE_HAS_SIGNAL = 0x01,
     /// Has found a signal
-    pub const FE_HAS_CARRIER: u32               = 0x02;
+    FE_HAS_CARRIER = 0x02,
     /// FEC inner coding (Viterbi, LDPC or other inner code) is stable.
-    pub const FE_HAS_VITERBI: u32               = 0x04;
+    FE_HAS_VITERBI = 0x04,
     /// Synchronization bytes was found
-    pub const FE_HAS_SYNC: u32                  = 0x08;
+    FE_HAS_SYNC = 0x08,
     /// Digital TV were locked and everything is working
-    pub const FE_HAS_LOCK: u32                  = 0x10;
+    FE_HAS_LOCK = 0x10,
     /// Fo lock within the last about 2 seconds
-    pub const FE_TIMEDOUT: u32                  = 0x20;
+    FE_TIMEDOUT = 0x20,
     /// Frontend was reinitialized, application is recommended
     /// to reset DiSEqC, tone and parameters
-    pub const FE_REINIT: u32                    = 0x40;
+    FE_REINIT = 0x40,
 }
 
 
 /// Spectral band inversion
-mod fe_spectral_inversion {
-    pub const INVERSION_OFF: u32                = 0;
-    pub const INVERSION_ON: u32                 = 1;
-    pub const INVERSION_AUTO: u32               = 2;
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_spectral_inversion {
+    INVERSION_OFF = 0,
+    INVERSION_ON = 1,
+    INVERSION_AUTO = 2,
 }
 
 
-mod fe_code_rate {
-    pub const FEC_NONE: u32                     = 0;
-    pub const FEC_1_2: u32                      = 1;
-    pub const FEC_2_3: u32                      = 2;
-    pub const FEC_3_4: u32                      = 3;
-    pub const FEC_4_5: u32                      = 4;
-    pub const FEC_5_6: u32                      = 5;
-    pub const FEC_6_7: u32                      = 6;
-    pub const FEC_7_8: u32                      = 7;
-    pub const FEC_8_9: u32                      = 8;
-    pub const FEC_AUTO: u32                     = 9;
-    pub const FEC_3_5: u32                      = 10;
-    pub const FEC_9_10: u32                     = 11;
-    pub const FEC_2_5: u32                      = 12;
-    pub const FEC_1_4: u32                      = 13;
-    pub const FEC_1_3: u32                      = 14;
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_code_rate {
+    FEC_NONE = 0,
+    FEC_1_2 = 1,
+    FEC_2_3 = 2,
+    FEC_3_4 = 3,
+    FEC_4_5 = 4,
+    FEC_5_6 = 5,
+    FEC_6_7 = 6,
+    FEC_7_8 = 7,
+    FEC_8_9 = 8,
+    FEC_AUTO = 9,
+    FEC_3_5 = 10,
+    FEC_9_10 = 11,
+    FEC_2_5 = 12,
+    FEC_1_4 = 13,
+    FEC_1_3 = 14,
 }
 
 
 /// Type of modulation/constellation
-mod fe_modulation {
-    pub const QPSK: u32                         = 0;
-    pub const QAM_16: u32                       = 1;
-    pub const QAM_32: u32                       = 2;
-    pub const QAM_64: u32                       = 3;
-    pub const QAM_128: u32                      = 4;
-    pub const QAM_256: u32                      = 5;
-    pub const QAM_AUTO: u32                     = 6;
-    pub const VSB_8: u32                        = 7;
-    pub const VSB_16: u32                       = 8;
-    pub const PSK_8: u32                        = 9;
-    pub const APSK_16: u32                      = 10;
-    pub const APSK_32: u32                      = 11;
-    pub const DQPSK: u32                        = 12;
-    pub const QAM_4_NR: u32                     = 13;
-    pub const APSK_64: u32                      = 14;
-    pub const APSK_128: u32                     = 15;
-    pub const APSK_256: u32                     = 16;
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_modulation {
+    QPSK = 0,
+    QAM_16 = 1,
+    QAM_32 = 2,
+    QAM_64 = 3,
+    QAM_128 = 4,
+    QAM_256 = 5,
+    QAM_AUTO = 6,
+    VSB_8 = 7,
+    VSB_16 = 8,
+    PSK_8 = 9,
+    APSK_16 = 10,
+    APSK_32 = 11,
+    DQPSK = 12,
+    QAM_4_NR = 13,
+    APSK_64 = 14,
+    APSK_128 = 15,
+    APSK_256 = 16,
 }
 
 
-mod fe_transmit_mode {
-    pub const TRANSMISSION_MODE_2K: u32         = 0;
-    pub const TRANSMISSION_MODE_8K: u32         = 1;
-    pub const TRANSMISSION_MODE_AUTO: u32       = 2;
-    pub const TRANSMISSION_MODE_4K: u32         = 3;
-    pub const TRANSMISSION_MODE_1K: u32         = 4;
-    pub const TRANSMISSION_MODE_16K: u32        = 5;
-    pub const TRANSMISSION_MODE_32K: u32        = 6;
-    pub const TRANSMISSION_MODE_C1: u32         = 7;
-    pub const TRANSMISSION_MODE_C3780: u32      = 8;
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_transmit_mode {
+    TRANSMISSION_MODE_2K = 0,
+    TRANSMISSION_MODE_8K = 1,
+    TRANSMISSION_MODE_AUTO = 2,
+    TRANSMISSION_MODE_4K = 3,
+    TRANSMISSION_MODE_1K = 4,
+    TRANSMISSION_MODE_16K = 5,
+    TRANSMISSION_MODE_32K = 6,
+    TRANSMISSION_MODE_C1 = 7,
+    TRANSMISSION_MODE_C3780 = 8,
 }
 
 
-mod fe_guard_interval {
-    pub const GUARD_INTERVAL_1_32: u32          = 0;
-    pub const GUARD_INTERVAL_1_16: u32          = 1;
-    pub const GUARD_INTERVAL_1_8: u32           = 2;
-    pub const GUARD_INTERVAL_1_4: u32           = 3;
-    pub const GUARD_INTERVAL_AUTO: u32          = 4;
-    pub const GUARD_INTERVAL_1_128: u32         = 5;
-    pub const GUARD_INTERVAL_19_128: u32        = 6;
-    pub const GUARD_INTERVAL_19_256: u32        = 7;
-    pub const GUARD_INTERVAL_PN420: u32         = 8;
-    pub const GUARD_INTERVAL_PN595: u32         = 9;
-    pub const GUARD_INTERVAL_PN945: u32         = 10;
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_guard_interval {
+    GUARD_INTERVAL_1_32 = 0,
+    GUARD_INTERVAL_1_16 = 1,
+    GUARD_INTERVAL_1_8 = 2,
+    GUARD_INTERVAL_1_4 = 3,
+    GUARD_INTERVAL_AUTO = 4,
+    GUARD_INTERVAL_1_128 = 5,
+    GUARD_INTERVAL_19_128 = 6,
+    GUARD_INTERVAL_19_256 = 7,
+    GUARD_INTERVAL_PN420 = 8,
+    GUARD_INTERVAL_PN595 = 9,
+    GUARD_INTERVAL_PN945 = 10,
 }
 
 
-mod fe_hierarchy {
-    pub const HIERARCHY_NONE: u32               = 0;
-    pub const HIERARCHY_1: u32                  = 1;
-    pub const HIERARCHY_2: u32                  = 2;
-    pub const HIERARCHY_4: u32                  = 3;
-    pub const HIERARCHY_AUTO: u32               = 4;
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_hierarchy {
+    HIERARCHY_NONE = 0,
+    HIERARCHY_1 = 1,
+    HIERARCHY_2 = 2,
+    HIERARCHY_4 = 3,
+    HIERARCHY_AUTO = 4,
 }
 
 
-mod fe_interleaving {
-    pub const INTERLEAVING_NONE: u32            = 0;
-    pub const INTERLEAVING_AUTO: u32            = 1;
-    pub const INTERLEAVING_240: u32             = 2;
-    pub const INTERLEAVING_720: u32             = 3;
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_interleaving {
+    INTERLEAVING_NONE = 0,
+    INTERLEAVING_AUTO = 1,
+    INTERLEAVING_240 = 2,
+    INTERLEAVING_720 = 3,
 }
 
 
-mod fe_pilot {
-    pub const PILOT_ON: u32                     = 0;
-    pub const PILOT_OFF: u32                    = 1;
-    pub const PILOT_AUTO: u32                   = 2;
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_pilot {
+    PILOT_ON = 0,
+    PILOT_OFF = 1,
+    PILOT_AUTO = 2,
 }
 
 
-mod fe_rolloff {
-    pub const ROLLOFF_35: u32                   = 0;
-    pub const ROLLOFF_20: u32                   = 1;
-    pub const ROLLOFF_25: u32                   = 2;
-    pub const ROLLOFF_AUTO: u32                 = 3;
-    pub const ROLLOFF_15: u32                   = 4;
-    pub const ROLLOFF_10: u32                   = 5;
-    pub const ROLLOFF_5: u32                    = 6;
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_rolloff {
+    ROLLOFF_35 = 0,
+    ROLLOFF_20 = 1,
+    ROLLOFF_25 = 2,
+    ROLLOFF_AUTO = 3,
+    ROLLOFF_15 = 4,
+    ROLLOFF_10 = 5,
+    ROLLOFF_5 = 6,
 }
 
 
-mod fe_delivery_system {
-    use std::fmt;
+#[derive(Display, Debug)]
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+pub enum fe_delivery_system {
 
-    pub const SYS_UNDEFINED: u32                = 0;
-    pub const SYS_DVBC_ANNEX_A: u32             = 1;
-    pub const SYS_DVBC_ANNEX_B: u32             = 2;
-    pub const SYS_DVBT: u32                     = 3;
-    pub const SYS_DSS: u32                      = 4;
-    pub const SYS_DVBS: u32                     = 5;
-    pub const SYS_DVBS2: u32                    = 6;
-    pub const SYS_DVBH: u32                     = 7;
-    pub const SYS_ISDBT: u32                    = 8;
-    pub const SYS_ISDBS: u32                    = 9;
-    pub const SYS_ISDBC: u32                    = 10;
-    pub const SYS_ATSC: u32                     = 11;
-    pub const SYS_ATSCMH: u32                   = 12;
-    pub const SYS_DTMB: u32                     = 13;
-    pub const SYS_CMMB: u32                     = 14;
-    pub const SYS_DAB: u32                      = 15;
-    pub const SYS_DVBT2: u32                    = 16;
-    pub const SYS_TURBO: u32                    = 17;
-    pub const SYS_DVBC_ANNEX_C: u32             = 18;
-    pub const SYS_DVBC2: u32                    = 19;
-
-    pub struct DeliverySystemDisplay(pub u32);
-
-    impl fmt::Display for DeliverySystemDisplay {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            let v = match self.0 {
-                SYS_UNDEFINED => "none",
-                SYS_DVBC_ANNEX_A => "dvb-c",
-                SYS_DVBC_ANNEX_B => "dvb-c/b",
-                SYS_DVBT => "dvb-t",
-                SYS_DSS => "dss",
-                SYS_DVBS => "dvb-s",
-                SYS_DVBS2 => "dvb-s2",
-                SYS_DVBH => "dvb-h",
-                SYS_ISDBT => "isdb-t",
-                SYS_ISDBS => "isdb-s",
-                SYS_ISDBC => "isdb-c",
-                SYS_ATSC => "atsc",
-                SYS_ATSCMH => "atsc-m/h",
-                SYS_DTMB => "dtmb",
-                SYS_CMMB => "cmmb",
-                SYS_DAB => "dab",
-                SYS_DVBT2 => "dvb-t2",
-                SYS_TURBO => "dvb-s/turbo",
-                SYS_DVBC_ANNEX_C => "dvb-c/c",
-                SYS_DVBC2 => "dvb-c2",
-                _ => "unknown",
-            };
-
-            write!(f, "{}", v)
-        }
-    }
+    #[strum(to_string = "none")]
+    SYS_UNDEFINED = 0,
+    #[strum(to_string = "dvb-c")]
+    SYS_DVBC_ANNEX_A = 1,
+    #[strum(to_string = "dvb-c/b")]
+    SYS_DVBC_ANNEX_B = 2,
+    #[strum(to_string = "dvb-t")]
+    SYS_DVBT = 3,
+    #[strum(to_string = "dss")]
+    SYS_DSS = 4,
+    #[strum(to_string = "dvb-s")]
+    SYS_DVBS = 5,
+    #[strum(to_string = "dvb-s2")]
+    SYS_DVBS2 = 6,
+    #[strum(to_string = "dvb-h")]
+    SYS_DVBH = 7,
+    #[strum(to_string = "isdb-t")]
+    SYS_ISDBT = 8,
+    #[strum(to_string = "isdb-s")]
+    SYS_ISDBS = 9,
+    #[strum(to_string = "isdb-c")]
+    SYS_ISDBC = 10,
+    #[strum(to_string = "atsc")]
+    SYS_ATSC = 11,
+    #[strum(to_string = "atsc-m/h")]
+    SYS_ATSCMH = 12,
+    #[strum(to_string = "dtmb")]
+    SYS_DTMB = 13,
+    #[strum(to_string = "cmmb")]
+    SYS_CMMB = 14,
+    #[strum(to_string = "dab")]
+    SYS_DAB = 15,
+    #[strum(to_string = "dvb-t2")]
+    SYS_DVBT2 = 16,
+    #[strum(to_string = "dvb-s/turbo")]
+    SYS_TURBO = 17,
+    #[strum(to_string = "dvb-c/c")]
+    SYS_DVBC_ANNEX_C = 18,
+    #[strum(to_string = "dvb-c2")]
+    SYS_DVBC2 = 19,
 }
-
 
 /// scale types for the quality parameters
 mod fecap_scale_params {
@@ -501,122 +538,124 @@ pub struct DtvPropertyBuffer {
 
 
 #[repr(C)]
-pub union DtvPropertyData {
-    pub data: u32,
-    pub st: DtvFrontendStats,
-    pub buffer: DtvPropertyBuffer,
-    __align: [u8; 56],
+pub enum DtvPropertyData {
+    data(u32),
+    st(DtvFrontendStats),
+    buffer(DtvPropertyBuffer),
 }
 
 
 /// DVBv5 property Commands
-mod dtv_property_cmd {
-    pub const DTV_UNDEFINED: u32                        = 0;
-    pub const DTV_TUNE: u32                             = 1;
-    pub const DTV_CLEAR: u32                            = 2;
-    pub const DTV_FREQUENCY: u32                        = 3;
-    pub const DTV_MODULATION: u32                       = 4;
-    pub const DTV_BANDWIDTH_HZ: u32                     = 5;
-    pub const DTV_INVERSION: u32                        = 6;
-    pub const DTV_DISEQC_MASTER: u32                    = 7;
-    pub const DTV_SYMBOL_RATE: u32                      = 8;
-    pub const DTV_INNER_FEC: u32                        = 9;
-    pub const DTV_VOLTAGE: u32                          = 10;
-    pub const DTV_TONE: u32                             = 11;
-    pub const DTV_PILOT: u32                            = 12;
-    pub const DTV_ROLLOFF: u32                          = 13;
-    pub const DTV_DISEQC_SLAVE_REPLY: u32               = 14;
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum dtv_property_cmd {
+    DTV_UNDEFINED = 0,
+    DTV_TUNE = 1,
+    DTV_CLEAR = 2,
+    DTV_FREQUENCY = 3,
+    DTV_MODULATION = 4,
+    DTV_BANDWIDTH_HZ = 5,
+    DTV_INVERSION = 6,
+    DTV_DISEQC_MASTER = 7,
+    DTV_SYMBOL_RATE = 8,
+    DTV_INNER_FEC = 9,
+    DTV_VOLTAGE = 10,
+    DTV_TONE = 11,
+    DTV_PILOT = 12,
+    DTV_ROLLOFF = 13,
+    DTV_DISEQC_SLAVE_REPLY = 14,
 
     /* Basic enumeration set for querying unlimited capabilities */
 
-    pub const DTV_FE_CAPABILITY_COUNT: u32              = 15;
-    pub const DTV_FE_CAPABILITY: u32                    = 16;
-    pub const DTV_DELIVERY_SYSTEM: u32                  = 17;
+    DTV_FE_CAPABILITY_COUNT = 15,
+    DTV_FE_CAPABILITY = 16,
+    DTV_DELIVERY_SYSTEM = 17,
 
     /* ISDB-T and ISDB-Tsb */
 
-    pub const DTV_ISDBT_PARTIAL_RECEPTION: u32          = 18;
-    pub const DTV_ISDBT_SOUND_BROADCASTING: u32         = 19;
+    DTV_ISDBT_PARTIAL_RECEPTION = 18,
+    DTV_ISDBT_SOUND_BROADCASTING = 19,
 
-    pub const DTV_ISDBT_SB_SUBCHANNEL_ID: u32           = 20;
-    pub const DTV_ISDBT_SB_SEGMENT_IDX: u32             = 21;
-    pub const DTV_ISDBT_SB_SEGMENT_COUNT: u32           = 22;
+    DTV_ISDBT_SB_SUBCHANNEL_ID = 20,
+    DTV_ISDBT_SB_SEGMENT_IDX = 21,
+    DTV_ISDBT_SB_SEGMENT_COUNT = 22,
 
-    pub const DTV_ISDBT_LAYERA_FEC: u32                 = 23;
-    pub const DTV_ISDBT_LAYERA_MODULATION: u32          = 24;
-    pub const DTV_ISDBT_LAYERA_SEGMENT_COUNT: u32       = 25;
-    pub const DTV_ISDBT_LAYERA_TIME_INTERLEAVING: u32   = 26;
+    DTV_ISDBT_LAYERA_FEC = 23,
+    DTV_ISDBT_LAYERA_MODULATION = 24,
+    DTV_ISDBT_LAYERA_SEGMENT_COUNT = 25,
+    DTV_ISDBT_LAYERA_TIME_INTERLEAVING = 26,
 
-    pub const DTV_ISDBT_LAYERB_FEC: u32                 = 27;
-    pub const DTV_ISDBT_LAYERB_MODULATION: u32          = 28;
-    pub const DTV_ISDBT_LAYERB_SEGMENT_COUNT: u32       = 29;
-    pub const DTV_ISDBT_LAYERB_TIME_INTERLEAVING: u32   = 30;
+    DTV_ISDBT_LAYERB_FEC = 27,
+    DTV_ISDBT_LAYERB_MODULATION = 28,
+    DTV_ISDBT_LAYERB_SEGMENT_COUNT = 29,
+    DTV_ISDBT_LAYERB_TIME_INTERLEAVING = 30,
 
-    pub const DTV_ISDBT_LAYERC_FEC: u32                 = 31;
-    pub const DTV_ISDBT_LAYERC_MODULATION: u32          = 32;
-    pub const DTV_ISDBT_LAYERC_SEGMENT_COUNT: u32       = 33;
-    pub const DTV_ISDBT_LAYERC_TIME_INTERLEAVING: u32   = 34;
+    DTV_ISDBT_LAYERC_FEC = 31,
+    DTV_ISDBT_LAYERC_MODULATION = 32,
+    DTV_ISDBT_LAYERC_SEGMENT_COUNT = 33,
+    DTV_ISDBT_LAYERC_TIME_INTERLEAVING = 34,
 
-    pub const DTV_API_VERSION: u32                      = 35;
+    DTV_API_VERSION = 35,
 
     /* DVB-T/T2 */
 
-    pub const DTV_CODE_RATE_HP: u32                     = 36;
-    pub const DTV_CODE_RATE_LP: u32                     = 37;
-    pub const DTV_GUARD_INTERVAL: u32                   = 38;
-    pub const DTV_TRANSMISSION_MODE: u32                = 39;
-    pub const DTV_HIERARCHY: u32                        = 40;
+    DTV_CODE_RATE_HP = 36,
+    DTV_CODE_RATE_LP = 37,
+    DTV_GUARD_INTERVAL = 38,
+    DTV_TRANSMISSION_MODE = 39,
+    DTV_HIERARCHY = 40,
 
-    pub const DTV_ISDBT_LAYER_ENABLED: u32              = 41;
+    DTV_ISDBT_LAYER_ENABLED = 41,
 
-    pub const DTV_STREAM_ID: u32                        = 42;
-    pub const DTV_DVBT2_PLP_ID_LEGACY: u32              = 43;
+    DTV_STREAM_ID = 42,
+    DTV_DVBT2_PLP_ID_LEGACY = 43,
 
-    pub const DTV_ENUM_DELSYS: u32                      = 44;
+    DTV_ENUM_DELSYS = 44,
 
     /* ATSC-MH */
 
-    pub const DTV_ATSCMH_FIC_VER: u32                   = 45;
-    pub const DTV_ATSCMH_PARADE_ID: u32                 = 46;
-    pub const DTV_ATSCMH_NOG: u32                       = 47;
-    pub const DTV_ATSCMH_TNOG: u32                      = 48;
-    pub const DTV_ATSCMH_SGN: u32                       = 49;
-    pub const DTV_ATSCMH_PRC: u32                       = 50;
-    pub const DTV_ATSCMH_RS_FRAME_MODE: u32             = 51;
-    pub const DTV_ATSCMH_RS_FRAME_ENSEMBLE: u32         = 52;
-    pub const DTV_ATSCMH_RS_CODE_MODE_PRI: u32          = 53;
-    pub const DTV_ATSCMH_RS_CODE_MODE_SEC: u32          = 54;
-    pub const DTV_ATSCMH_SCCC_BLOCK_MODE: u32           = 55;
-    pub const DTV_ATSCMH_SCCC_CODE_MODE_A: u32          = 56;
-    pub const DTV_ATSCMH_SCCC_CODE_MODE_B: u32          = 57;
-    pub const DTV_ATSCMH_SCCC_CODE_MODE_C: u32          = 58;
-    pub const DTV_ATSCMH_SCCC_CODE_MODE_D: u32          = 59;
+    DTV_ATSCMH_FIC_VER = 45,
+    DTV_ATSCMH_PARADE_ID = 46,
+    DTV_ATSCMH_NOG = 47,
+    DTV_ATSCMH_TNOG = 48,
+    DTV_ATSCMH_SGN = 49,
+    DTV_ATSCMH_PRC = 50,
+    DTV_ATSCMH_RS_FRAME_MODE = 51,
+    DTV_ATSCMH_RS_FRAME_ENSEMBLE = 52,
+    DTV_ATSCMH_RS_CODE_MODE_PRI = 53,
+    DTV_ATSCMH_RS_CODE_MODE_SEC = 54,
+    DTV_ATSCMH_SCCC_BLOCK_MODE = 55,
+    DTV_ATSCMH_SCCC_CODE_MODE_A = 56,
+    DTV_ATSCMH_SCCC_CODE_MODE_B = 57,
+    DTV_ATSCMH_SCCC_CODE_MODE_C = 58,
+    DTV_ATSCMH_SCCC_CODE_MODE_D = 59,
 
-    pub const DTV_INTERLEAVING: u32                     = 60;
-    pub const DTV_LNA: u32                              = 61;
+    DTV_INTERLEAVING = 60,
+    DTV_LNA = 61,
 
     /* Quality parameters */
 
-    pub const DTV_STAT_SIGNAL_STRENGTH: u32             = 62;
-    pub const DTV_STAT_CNR: u32                         = 63;
-    pub const DTV_STAT_PRE_ERROR_BIT_COUNT: u32         = 64;
-    pub const DTV_STAT_PRE_TOTAL_BIT_COUNT: u32         = 65;
-    pub const DTV_STAT_POST_ERROR_BIT_COUNT: u32        = 66;
-    pub const DTV_STAT_POST_TOTAL_BIT_COUNT: u32        = 67;
-    pub const DTV_STAT_ERROR_BLOCK_COUNT: u32           = 68;
-    pub const DTV_STAT_TOTAL_BLOCK_COUNT: u32           = 69;
+    DTV_STAT_SIGNAL_STRENGTH = 62,
+    DTV_STAT_CNR = 63,
+    DTV_STAT_PRE_ERROR_BIT_COUNT = 64,
+    DTV_STAT_PRE_TOTAL_BIT_COUNT = 65,
+    DTV_STAT_POST_ERROR_BIT_COUNT = 66,
+    DTV_STAT_POST_TOTAL_BIT_COUNT = 67,
+    DTV_STAT_ERROR_BLOCK_COUNT = 68,
+    DTV_STAT_TOTAL_BLOCK_COUNT = 69,
 
     /* Physical layer scrambling */
 
-    pub const DTV_SCRAMBLING_SEQUENCE_INDEX: u32        = 70;
-    pub const DTV_INPUT: u32                            = 71;
+    DTV_SCRAMBLING_SEQUENCE_INDEX = 70,
+    DTV_INPUT = 71,
 }
 
 
 /// Store one of frontend command and its value
 #[repr(C, packed)]
 pub struct DtvProperty {
-    pub cmd: u32,
+    pub cmd: dtv_property_cmd,
     __reserved_1: [u32; 3],
     pub u: DtvPropertyData,
     pub result: i32,
@@ -721,7 +760,7 @@ impl fmt::Debug for DtvProperty {
 
 impl DtvProperty {
     #[inline]
-    pub fn new(cmd: u32, data: u32) -> Self {
+    pub fn new(cmd: dtv_property_cmd, data: u32) -> Self {
         Self {
             cmd,
             __reserved_1: [0, 0, 0],
@@ -730,10 +769,6 @@ impl DtvProperty {
         }
     }
 }
-
-
-pub const DTV_MAX_COMMAND: u32                          = DTV_INPUT;
-
 
 /// num of properties cannot exceed DTV_IOCTL_MAX_MSGS per ioctl
 pub const DTV_IOCTL_MAX_MSGS: usize                     = 64;

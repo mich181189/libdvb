@@ -15,8 +15,8 @@ use {
 /// Frontend status
 #[derive(Debug)]
 pub struct FeStatus {
-    /// `sys::frontend::fe_status`
-    status: u32,
+    /// `sys::frontend::FeStatus`
+    status: fe_status,
 
     /// properties
     props: [DtvProperty; 6],
@@ -91,7 +91,7 @@ impl fmt::Display for FeStatus {
         }
 
         if self.status & FE_HAS_LOCK != 0 {
-            write!(f, "LOCK {}", DeliverySystemDisplay(self.get_delivery_system()))?;
+            write!(f, "LOCK {}", self.get_delivery_system())?;
         } else {
             write!(f, "NO-LOCK 0x{:02X}", self.status)?;
         }
