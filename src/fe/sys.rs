@@ -1,30 +1,10 @@
-use {
-    std::{
-        fmt,
-        mem,
-    },
-};
-
+use std::{fmt, mem};
 
 pub use {
-    fe_caps::*,
-    fe_type::*,
-    fe_sec_voltage::*,
-    fe_sec_tone_mode::*,
-    fe_sec_mini_cmd::*,
-    fe_status::*,
-    fe_spectral_inversion::*,
-    fe_code_rate::*,
-    fe_modulation::*,
-    fe_transmit_mode::*,
-    fe_guard_interval::*,
-    fe_hierarchy::*,
-    fe_interleaving::*,
-    fe_pilot::*,
-    fe_rolloff::*,
-    fe_delivery_system::*,
-    fecap_scale_params::*,
-    dtv_property_cmd::*,
+    fe_caps::*, fe_code_rate::*, fe_delivery_system::*, fe_guard_interval::*, fe_hierarchy::*,
+    fe_interleaving::*, fe_modulation::*, fe_pilot::*, fe_rolloff::*, fe_sec_mini_cmd::*,
+    fe_sec_tone_mode::*, fe_sec_voltage::*, fe_spectral_inversion::*, fe_status::*,
+    fe_transmit_mode::*, fe_type::*, fecap_scale_params::*, DtvProperty::*,
 };
 
 use strum::{Display, FromRepr};
@@ -99,7 +79,6 @@ pub enum fe_caps {
     FE_CAN_MUTE_TS = 0x80000000,
 }
 
-
 /// DEPRECATED: Should be kept just due to backward compatibility
 #[repr(u32)]
 #[allow(non_camel_case_types)]
@@ -111,7 +90,6 @@ pub enum fe_type {
     FE_OFDM = 2,
     FE_ATSC = 3,
 }
-
 
 /// Frontend properties and capabilities
 /// The frequencies are specified in Hz for Terrestrial and Cable systems.
@@ -143,18 +121,19 @@ pub struct FeInfo {
     pub caps: u32,
 }
 
-
 impl Default for FeInfo {
     #[inline]
-    fn default() -> Self { unsafe { mem::zeroed::<Self>() } }
+    fn default() -> Self {
+        unsafe { mem::zeroed::<Self>() }
+    }
 }
-
 
 impl FeInfo {
     #[inline]
-    pub fn as_mut_ptr(&mut self) -> *mut FeInfo { self as *mut _ }
+    pub fn as_mut_ptr(&mut self) -> *mut FeInfo {
+        self as *mut _
+    }
 }
-
 
 /// DiSEqC master command
 /// Check out the DiSEqC bus spec available on http://www.eutelsat.org/ for
@@ -170,12 +149,12 @@ pub struct DiseqcMasterCmd {
     pub len: u8,
 }
 
-
 impl Default for DiseqcMasterCmd {
     #[inline]
-    fn default() -> Self { unsafe { mem::zeroed::<Self>() } }
+    fn default() -> Self {
+        unsafe { mem::zeroed::<Self>() }
+    }
 }
-
 
 /// DiSEqC received data
 #[repr(C)]
@@ -193,12 +172,12 @@ pub struct DiseqcSlaveReply {
     pub timeout: u32,
 }
 
-
 impl Default for DiseqcSlaveReply {
     #[inline]
-    fn default() -> Self { unsafe { mem::zeroed::<Self>() } }
+    fn default() -> Self {
+        unsafe { mem::zeroed::<Self>() }
+    }
 }
-
 
 /// DC Voltage used to feed the LNBf
 #[repr(u32)]
@@ -213,7 +192,6 @@ pub enum fe_sec_voltage {
     SEC_VOLTAGE_OFF = 2,
 }
 
-
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, FromRepr)]
@@ -223,7 +201,6 @@ pub enum fe_sec_tone_mode {
     /// Don't send a 22kHz tone to the antenna (except if the FE_DISEQC_* ioctl are called)
     SEC_TONE_OFF = 1,
 }
-
 
 /// Type of mini burst to be sent
 #[repr(u32)]
@@ -235,7 +212,6 @@ pub enum fe_sec_mini_cmd {
     /// Sends a mini-DiSEqC 22kHz '1' Data Burst to select satellite-B
     SEC_MINI_B = 1,
 }
-
 
 /// Enumerates the possible frontend status
 #[repr(u32)]
@@ -261,7 +237,6 @@ pub enum fe_status {
     FE_REINIT = 0x40,
 }
 
-
 /// Spectral band inversion
 #[repr(u32)]
 #[allow(non_camel_case_types)]
@@ -271,7 +246,6 @@ pub enum fe_spectral_inversion {
     INVERSION_ON = 1,
     INVERSION_AUTO = 2,
 }
-
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
@@ -293,7 +267,6 @@ pub enum fe_code_rate {
     FEC_1_4 = 13,
     FEC_1_3 = 14,
 }
-
 
 /// Type of modulation/constellation
 #[repr(u32)]
@@ -319,7 +292,6 @@ pub enum fe_modulation {
     APSK_256 = 16,
 }
 
-
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, FromRepr)]
@@ -334,7 +306,6 @@ pub enum fe_transmit_mode {
     TRANSMISSION_MODE_C1 = 7,
     TRANSMISSION_MODE_C3780 = 8,
 }
-
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
@@ -353,7 +324,6 @@ pub enum fe_guard_interval {
     GUARD_INTERVAL_PN945 = 10,
 }
 
-
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, FromRepr)]
@@ -365,7 +335,6 @@ pub enum fe_hierarchy {
     HIERARCHY_AUTO = 4,
 }
 
-
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, FromRepr)]
@@ -376,7 +345,6 @@ pub enum fe_interleaving {
     INTERLEAVING_720 = 3,
 }
 
-
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, FromRepr)]
@@ -385,7 +353,6 @@ pub enum fe_pilot {
     PILOT_OFF = 1,
     PILOT_AUTO = 2,
 }
-
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
@@ -400,12 +367,10 @@ pub enum fe_rolloff {
     ROLLOFF_5 = 6,
 }
 
-
 #[derive(Display, Debug)]
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 pub enum fe_delivery_system {
-
     #[strum(to_string = "none")]
     SYS_UNDEFINED = 0,
     #[strum(to_string = "dvb-c")]
@@ -448,21 +413,29 @@ pub enum fe_delivery_system {
     SYS_DVBC2 = 19,
 }
 
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, PartialEq, Eq, FromRepr)]
+pub enum fe_lna {
+    LNA_OFF = 0,
+    LNA_ON = 1,
+    LNA_AUTO = 0xFFFFFFFF,
+}
+
 /// scale types for the quality parameters
 mod fecap_scale_params {
     /// That QoS measure is not available. That could indicate
     /// a temporary or a permanent condition.
-    pub const FE_SCALE_NOT_AVAILABLE: u8       = 0;
+    pub const FE_SCALE_NOT_AVAILABLE: u8 = 0;
     /// The scale is measured in 0.001 dB steps, typically used on signal measures.
-    pub const FE_SCALE_DECIBEL: u8             = 1;
+    pub const FE_SCALE_DECIBEL: u8 = 1;
     /// The scale is a relative percentual measure,
     /// ranging from 0 (0%) to 0xffff (100%).
-    pub const FE_SCALE_RELATIVE: u8            = 2;
+    pub const FE_SCALE_RELATIVE: u8 = 2;
     /// The scale counts the occurrence of an event, like
     /// bit error, block error, lapsed time.
-    pub const FE_SCALE_COUNTER: u8             = 3;
+    pub const FE_SCALE_COUNTER: u8 = 3;
 }
-
 
 /// Used for reading a DTV status property
 #[repr(C, packed)]
@@ -471,7 +444,6 @@ pub struct DtvStats {
     pub scale: u8, // fecap_scale_params
     pub value: i64,
 }
-
 
 impl fmt::Debug for DtvStats {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -487,18 +459,18 @@ impl fmt::Debug for DtvStats {
             }
             FE_SCALE_DECIBEL => {
                 s.field(FIELD_SCALE, &"FE_SCALE_DECIBEL");
-                s.field(FIELD_VALUE, &{(self.value as f64) / 1000.0});
+                s.field(FIELD_VALUE, &{ (self.value as f64) / 1000.0 });
             }
             FE_SCALE_RELATIVE => {
                 s.field(FIELD_SCALE, &"FE_SCALE_RELATIVE");
-                s.field(FIELD_VALUE, &{self.value as u64});
+                s.field(FIELD_VALUE, &{ self.value as u64 });
             }
             FE_SCALE_COUNTER => {
                 s.field(FIELD_SCALE, &"FE_SCALE_COUNTER");
-                s.field(FIELD_VALUE, &{self.value as u64});
+                s.field(FIELD_VALUE, &{ self.value as u64 });
             }
             _ => {
-                s.field(FIELD_SCALE, &{self.scale});
+                s.field(FIELD_SCALE, &{ self.scale });
                 s.field(FIELD_VALUE, &"invalid scale format");
             }
         };
@@ -506,9 +478,7 @@ impl fmt::Debug for DtvStats {
     }
 }
 
-
 pub const MAX_DTV_STATS: usize = 4;
-
 
 /// Store Digital TV frontend statistics
 #[repr(C, packed)]
@@ -518,14 +488,12 @@ pub struct DtvFrontendStats {
     pub stat: [DtvStats; MAX_DTV_STATS],
 }
 
-
 impl fmt::Debug for DtvFrontendStats {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let len = ::std::cmp::min(self.len as usize, self.stat.len());
-        f.debug_list().entries(self.stat[0 .. len].iter()).finish()
+        f.debug_list().entries(self.stat[0..len].iter()).finish()
     }
 }
-
 
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -536,243 +504,151 @@ pub struct DtvPropertyBuffer {
     __reserved_2: *mut std::ffi::c_void,
 }
 
-
-#[repr(C)]
-pub enum DtvPropertyData {
-    data(u32),
-    st(DtvFrontendStats),
-    buffer(DtvPropertyBuffer),
+impl fmt::Debug for DtvPropertyBuffer {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let len = ::std::cmp::min(self.len as usize, self.data.len());
+        f.debug_list().entries(self.data[0..len].iter()).finish()
+    }
 }
 
-
-/// DVBv5 property Commands
-#[repr(u32)]
-#[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
-pub enum dtv_property_cmd {
-    DTV_UNDEFINED = 0,
-    DTV_TUNE = 1,
-    DTV_CLEAR = 2,
-    DTV_FREQUENCY = 3,
-    DTV_MODULATION = 4,
-    DTV_BANDWIDTH_HZ = 5,
-    DTV_INVERSION = 6,
-    DTV_DISEQC_MASTER = 7,
-    DTV_SYMBOL_RATE = 8,
-    DTV_INNER_FEC = 9,
-    DTV_VOLTAGE = 10,
-    DTV_TONE = 11,
-    DTV_PILOT = 12,
-    DTV_ROLLOFF = 13,
-    DTV_DISEQC_SLAVE_REPLY = 14,
-
-    /* Basic enumeration set for querying unlimited capabilities */
-
-    DTV_FE_CAPABILITY_COUNT = 15,
-    DTV_FE_CAPABILITY = 16,
-    DTV_DELIVERY_SYSTEM = 17,
-
-    /* ISDB-T and ISDB-Tsb */
-
-    DTV_ISDBT_PARTIAL_RECEPTION = 18,
-    DTV_ISDBT_SOUND_BROADCASTING = 19,
-
-    DTV_ISDBT_SB_SUBCHANNEL_ID = 20,
-    DTV_ISDBT_SB_SEGMENT_IDX = 21,
-    DTV_ISDBT_SB_SEGMENT_COUNT = 22,
-
-    DTV_ISDBT_LAYERA_FEC = 23,
-    DTV_ISDBT_LAYERA_MODULATION = 24,
-    DTV_ISDBT_LAYERA_SEGMENT_COUNT = 25,
-    DTV_ISDBT_LAYERA_TIME_INTERLEAVING = 26,
-
-    DTV_ISDBT_LAYERB_FEC = 27,
-    DTV_ISDBT_LAYERB_MODULATION = 28,
-    DTV_ISDBT_LAYERB_SEGMENT_COUNT = 29,
-    DTV_ISDBT_LAYERB_TIME_INTERLEAVING = 30,
-
-    DTV_ISDBT_LAYERC_FEC = 31,
-    DTV_ISDBT_LAYERC_MODULATION = 32,
-    DTV_ISDBT_LAYERC_SEGMENT_COUNT = 33,
-    DTV_ISDBT_LAYERC_TIME_INTERLEAVING = 34,
-
-    DTV_API_VERSION = 35,
-
-    /* DVB-T/T2 */
-
-    DTV_CODE_RATE_HP = 36,
-    DTV_CODE_RATE_LP = 37,
-    DTV_GUARD_INTERVAL = 38,
-    DTV_TRANSMISSION_MODE = 39,
-    DTV_HIERARCHY = 40,
-
-    DTV_ISDBT_LAYER_ENABLED = 41,
-
-    DTV_STREAM_ID = 42,
-    DTV_DVBT2_PLP_ID_LEGACY = 43,
-
-    DTV_ENUM_DELSYS = 44,
-
-    /* ATSC-MH */
-
-    DTV_ATSCMH_FIC_VER = 45,
-    DTV_ATSCMH_PARADE_ID = 46,
-    DTV_ATSCMH_NOG = 47,
-    DTV_ATSCMH_TNOG = 48,
-    DTV_ATSCMH_SGN = 49,
-    DTV_ATSCMH_PRC = 50,
-    DTV_ATSCMH_RS_FRAME_MODE = 51,
-    DTV_ATSCMH_RS_FRAME_ENSEMBLE = 52,
-    DTV_ATSCMH_RS_CODE_MODE_PRI = 53,
-    DTV_ATSCMH_RS_CODE_MODE_SEC = 54,
-    DTV_ATSCMH_SCCC_BLOCK_MODE = 55,
-    DTV_ATSCMH_SCCC_CODE_MODE_A = 56,
-    DTV_ATSCMH_SCCC_CODE_MODE_B = 57,
-    DTV_ATSCMH_SCCC_CODE_MODE_C = 58,
-    DTV_ATSCMH_SCCC_CODE_MODE_D = 59,
-
-    DTV_INTERLEAVING = 60,
-    DTV_LNA = 61,
-
-    /* Quality parameters */
-
-    DTV_STAT_SIGNAL_STRENGTH = 62,
-    DTV_STAT_CNR = 63,
-    DTV_STAT_PRE_ERROR_BIT_COUNT = 64,
-    DTV_STAT_PRE_TOTAL_BIT_COUNT = 65,
-    DTV_STAT_POST_ERROR_BIT_COUNT = 66,
-    DTV_STAT_POST_TOTAL_BIT_COUNT = 67,
-    DTV_STAT_ERROR_BLOCK_COUNT = 68,
-    DTV_STAT_TOTAL_BLOCK_COUNT = 69,
-
-    /* Physical layer scrambling */
-
-    DTV_SCRAMBLING_SEQUENCE_INDEX = 70,
-    DTV_INPUT = 71,
-}
-
-
-/// Store one of frontend command and its value
 #[repr(C, packed)]
-pub struct DtvProperty {
-    pub cmd: dtv_property_cmd,
-    __reserved_1: [u32; 3],
-    pub u: DtvPropertyData,
+#[derive(Debug)]
+pub struct DtvPropertyData<T> {
+    __reserved: [u32; 3],
+    pub data: T,
     pub result: i32,
 }
 
-
-impl fmt::Debug for DtvProperty {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut s = f.debug_struct("DtvProperty");
-
-        const FIELD_CMD: &str = "cmd";
-        const FIELD_DATA: &str = "data";
-        const FIELD_STATS: &str = "stats";
-
-        match self.cmd {
-            DTV_FREQUENCY => {
-                s.field(FIELD_CMD, &"DTV_FREQUENCY");
-                s.field(FIELD_DATA, unsafe { &self.u.data });
-            }
-            DTV_MODULATION => {
-                s.field(FIELD_CMD, &"DTV_MODULATION");
-                s.field(FIELD_DATA, unsafe { &self.u.data });
-            }
-            DTV_BANDWIDTH_HZ => {
-                s.field(FIELD_CMD, &"DTV_BANDWIDTH_HZ");
-                s.field(FIELD_DATA, unsafe { &self.u.data });
-            }
-            DTV_INVERSION => {
-                s.field(FIELD_CMD, &"DTV_INVERSION");
-                s.field(FIELD_DATA, unsafe { &self.u.data });
-            }
-            DTV_SYMBOL_RATE  => {
-                s.field(FIELD_CMD, &"DTV_SYMBOL_RATE");
-                s.field(FIELD_DATA, unsafe { &self.u.data });
-            }
-            DTV_INNER_FEC => {
-                s.field(FIELD_CMD, &"DTV_INNER_FEC");
-                s.field(FIELD_DATA, unsafe { &self.u.data });
-            }
-            DTV_PILOT => {
-                s.field(FIELD_CMD, &"DTV_PILOT");
-                s.field(FIELD_DATA, unsafe { &self.u.data });
-            }
-            DTV_ROLLOFF => {
-                s.field(FIELD_CMD, &"DTV_ROLLOFF");
-                s.field(FIELD_DATA, unsafe { &self.u.data });
-            }
-            DTV_DELIVERY_SYSTEM => {
-                s.field(FIELD_CMD, &"DTV_DELIVERY_SYSTEM");
-                s.field(FIELD_DATA, unsafe { &self.u.data });
-            }
-            DTV_API_VERSION => {
-                s.field(FIELD_CMD, &"DTV_API_VERSION");
-                s.field(FIELD_DATA, unsafe { &self.u.data });
-            }
-
-            /* Quality parameters */
-
-            DTV_STAT_SIGNAL_STRENGTH => {
-                s.field(FIELD_CMD, &"DTV_STAT_SIGNAL_STRENGTH");
-                s.field(FIELD_STATS, unsafe { &self.u.st });
-            }
-            DTV_STAT_CNR => {
-                s.field(FIELD_CMD, &"DTV_STAT_CNR");
-                s.field(FIELD_STATS, unsafe { &self.u.st });
-            }
-
-            DTV_STAT_PRE_ERROR_BIT_COUNT => {
-                s.field(FIELD_CMD, &"DTV_STAT_PRE_ERROR_BIT_COUNT");
-                s.field(FIELD_STATS, unsafe { &self.u.st });
-            }
-            DTV_STAT_PRE_TOTAL_BIT_COUNT => {
-                s.field(FIELD_CMD, &"DTV_STAT_PRE_TOTAL_BIT_COUNT");
-                s.field(FIELD_STATS, unsafe { &self.u.st });
-            }
-            DTV_STAT_POST_ERROR_BIT_COUNT => {
-                s.field(FIELD_CMD, &"DTV_STAT_POST_ERROR_BIT_COUNT");
-                s.field(FIELD_STATS, unsafe { &self.u.st });
-            }
-            DTV_STAT_POST_TOTAL_BIT_COUNT => {
-                s.field(FIELD_CMD, &"DTV_STAT_POST_TOTAL_BIT_COUNT");
-                s.field(FIELD_STATS, unsafe { &self.u.st });
-            }
-            DTV_STAT_ERROR_BLOCK_COUNT => {
-                s.field(FIELD_CMD, &"DTV_STAT_ERROR_BLOCK_COUNT");
-                s.field(FIELD_STATS, unsafe { &self.u.st });
-            }
-            DTV_STAT_TOTAL_BLOCK_COUNT => {
-                s.field(FIELD_CMD, &"DTV_STAT_TOTAL_BLOCK_COUNT");
-                s.field(FIELD_STATS, unsafe { &self.u.st });
-            }
-
-            // TODO: more values
-            _ => {}
+impl<T> DtvPropertyData<T> {
+    pub fn new(data: T) -> Self {
+        Self {
+            __reserved: [0, 0, 0],
+            data,
+            result: 0
         }
-
-        s.field("result", &{ self.result });
-        s.finish()
     }
 }
 
+pub type DtvPropertyRequestStats = DtvPropertyData<DtvFrontendStats>;
+pub type DtvPropertyRequestData = DtvPropertyData<DtvPropertyBuffer>;
+pub type DtvPropertyRequest = DtvPropertyData<u32>;
 
-impl DtvProperty {
-    #[inline]
-    pub fn new(cmd: dtv_property_cmd, data: u32) -> Self {
-        Self {
-            cmd,
-            __reserved_1: [0, 0, 0],
-            u: DtvPropertyData { data },
-            result: 0,
-        }
-    }
+#[repr(C, packed)]
+#[derive(Debug)]
+pub struct DtvPropertyNotImplementedLinux {
+    __reserved: [u32; 6],
+}
+
+#[deprecated(
+    note = "Not implemented, please fork libdvb and provide a correct implementation for this property."
+)]
+type DtvPropertyNotImplemented = DtvPropertyNotImplementedLinux;
+#[deprecated]
+type DtvPropertyDeprecated = DtvPropertyNotImplementedLinux;
+
+/// DVBv5 property Commands
+#[repr(u32, C)]
+#[allow(non_camel_case_types)]
+#[derive(Debug)]
+pub enum DtvProperty {
+    DTV_UNDEFINED(DtvPropertyNotImplementedLinux),
+    DTV_TUNE(DtvPropertyRequest),
+    DTV_CLEAR(DtvPropertyRequest),
+    DTV_FREQUENCY(DtvPropertyData<u32>),
+    DTV_MODULATION(DtvPropertyData<fe_modulation>),
+    DTV_BANDWIDTH_HZ(DtvPropertyData<u32>),
+    DTV_INVERSION(DtvPropertyData<fe_spectral_inversion>),
+    DTV_DISEQC_MASTER(DtvPropertyNotImplementedLinux),
+    DTV_SYMBOL_RATE(DtvPropertyData<u32>),
+    DTV_INNER_FEC(DtvPropertyData<fe_code_rate>),
+    DTV_VOLTAGE(DtvPropertyData<fe_sec_voltage>),
+    DTV_TONE(DtvPropertyNotImplementedLinux),
+    DTV_PILOT(DtvPropertyData<fe_pilot>),
+    DTV_ROLLOFF(DtvPropertyData<fe_rolloff>),
+    DTV_DISEQC_SLAVE_REPLY(DtvPropertyNotImplementedLinux),
+
+    /* Basic enumeration set for querying unlimited capabilities */
+    DTV_FE_CAPABILITY_COUNT(DtvPropertyNotImplementedLinux),
+    DTV_FE_CAPABILITY(DtvPropertyNotImplementedLinux),
+    DTV_DELIVERY_SYSTEM(DtvPropertyData<fe_delivery_system>),
+
+    /* ISDB-T and ISDB-Tsb */
+    // Please fork
+    DTV_ISDBT_PARTIAL_RECEPTION(DtvPropertyData<i32>),
+    DTV_ISDBT_SOUND_BROADCASTING(DtvPropertyData<i32>),
+
+    DTV_ISDBT_SB_SUBCHANNEL_ID(DtvPropertyData<i32>),
+    DTV_ISDBT_SB_SEGMENT_IDX(DtvPropertyData<i32>),
+    DTV_ISDBT_SB_SEGMENT_COUNT(DtvPropertyData<u32>),
+
+    DTV_ISDBT_LAYERA_FEC(DtvPropertyData<fe_code_rate>),
+    DTV_ISDBT_LAYERA_MODULATION(DtvPropertyData<fe_modulation>),
+    DTV_ISDBT_LAYERA_SEGMENT_COUNT(DtvPropertyData<i32>),
+    DTV_ISDBT_LAYERA_TIME_INTERLEAVING(DtvPropertyData<i32>),
+
+    DTV_ISDBT_LAYERB_FEC(DtvPropertyData<fe_code_rate>),
+    DTV_ISDBT_LAYERB_MODULATION(DtvPropertyData<fe_modulation>),
+    DTV_ISDBT_LAYERB_SEGMENT_COUNT(DtvPropertyData<i32>),
+    DTV_ISDBT_LAYERB_TIME_INTERLEAVING(DtvPropertyData<i32>),
+
+    DTV_ISDBT_LAYERC_FEC(DtvPropertyData<fe_code_rate>),
+    DTV_ISDBT_LAYERC_MODULATION(DtvPropertyData<fe_modulation>),
+    DTV_ISDBT_LAYERC_SEGMENT_COUNT(DtvPropertyData<i32>),
+    DTV_ISDBT_LAYERC_TIME_INTERLEAVING(DtvPropertyData<i32>),
+
+    DTV_API_VERSION(DtvPropertyRequest),
+
+    /* DVB-T/T2 */
+    DTV_CODE_RATE_HP(DtvPropertyData<fe_transmit_mode>),
+    DTV_CODE_RATE_LP(DtvPropertyData<fe_transmit_mode>),
+    DTV_GUARD_INTERVAL(DtvPropertyData<fe_guard_interval>),
+    DTV_TRANSMISSION_MODE(DtvPropertyData<fe_transmit_mode>),
+    DTV_HIERARCHY(DtvPropertyData<fe_hierarchy>),
+
+    DTV_ISDBT_LAYER_ENABLED(DtvPropertyData<u32>),
+
+    DTV_STREAM_ID(DtvPropertyData<u32>),
+    #[deprecated(note = "Obsolete, replaced with DTV_STREAM_ID.")]
+    DTV_DVBT2_PLP_ID_LEGACY(DtvPropertyDeprecated),
+
+    DTV_ENUM_DELSYS(DtvPropertyRequestData),
+
+    /* ATSC-MH */
+    DTV_ATSCMH_FIC_VER(DtvPropertyData<u32>),
+    DTV_ATSCMH_PARADE_ID(DtvPropertyData<u32>),
+    DTV_ATSCMH_NOG(DtvPropertyData<u32>),
+    DTV_ATSCMH_TNOG(DtvPropertyData<u32>),
+    DTV_ATSCMH_SGN(DtvPropertyData<u32>),
+    DTV_ATSCMH_PRC(DtvPropertyData<u32>),
+    DTV_ATSCMH_RS_FRAME_MODE(DtvPropertyNotImplemented),
+    DTV_ATSCMH_RS_FRAME_ENSEMBLE(DtvPropertyNotImplemented),
+    DTV_ATSCMH_RS_CODE_MODE_PRI(DtvPropertyNotImplemented),
+    DTV_ATSCMH_RS_CODE_MODE_SEC(DtvPropertyNotImplemented),
+    DTV_ATSCMH_SCCC_BLOCK_MODE(DtvPropertyNotImplemented),
+    DTV_ATSCMH_SCCC_CODE_MODE_A(DtvPropertyNotImplemented),
+    DTV_ATSCMH_SCCC_CODE_MODE_B(DtvPropertyNotImplemented),
+    DTV_ATSCMH_SCCC_CODE_MODE_C(DtvPropertyNotImplemented),
+    DTV_ATSCMH_SCCC_CODE_MODE_D(DtvPropertyNotImplemented),
+
+    DTV_INTERLEAVING(DtvPropertyData<fe_interleaving>),
+    DTV_LNA(DtvPropertyData<fe_lna>),
+
+    /* Quality parameters */
+    DTV_STAT_SIGNAL_STRENGTH(DtvPropertyRequestStats),
+    DTV_STAT_CNR(DtvPropertyRequestStats),
+    DTV_STAT_PRE_ERROR_BIT_COUNT(DtvPropertyRequestStats),
+    DTV_STAT_PRE_TOTAL_BIT_COUNT(DtvPropertyRequestStats),
+    DTV_STAT_POST_ERROR_BIT_COUNT(DtvPropertyRequestStats),
+    DTV_STAT_POST_TOTAL_BIT_COUNT(DtvPropertyRequestStats),
+    DTV_STAT_ERROR_BLOCK_COUNT(DtvPropertyRequestStats),
+    DTV_STAT_TOTAL_BLOCK_COUNT(DtvPropertyRequestStats),
+
+    /* Physical layer scrambling */
+    DTV_SCRAMBLING_SEQUENCE_INDEX(DtvPropertyRequest),
 }
 
 /// num of properties cannot exceed DTV_IOCTL_MAX_MSGS per ioctl
-pub const DTV_IOCTL_MAX_MSGS: usize                     = 64;
-
+pub const DTV_IOCTL_MAX_MSGS: usize = 64;
 
 #[repr(C)]
 #[derive(Debug)]
@@ -785,9 +661,7 @@ pub struct FeParameters {
     __reserved_1: [u8; 28],
 }
 
-
 pub const FE_MAX_EVENT: usize = 8;
-
 
 #[repr(C)]
 #[derive(Debug)]
@@ -796,14 +670,16 @@ pub struct FeEvent {
     pub parameters: FeParameters,
 }
 
-
 impl Default for FeEvent {
     #[inline]
-    fn default() -> Self { unsafe { mem::zeroed::<Self>() } }
+    fn default() -> Self {
+        unsafe { mem::zeroed::<Self>() }
+    }
 }
-
 
 impl FeEvent {
     #[inline]
-    pub fn as_mut_ptr(&mut self) -> *mut FeEvent { self as *mut _ }
+    pub fn as_mut_ptr(&mut self) -> *mut FeEvent {
+        self as *mut _
+    }
 }

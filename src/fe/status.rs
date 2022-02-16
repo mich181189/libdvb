@@ -37,9 +37,9 @@ impl Default for FeStatus {
             status: 0,
             props: [
                 // delivery system
-                DtvProperty::new(DTV_DELIVERY_SYSTEM, FE_NONE),
+                DTV_DELIVERY_SYSTEM(DtvPropertyData::new(SYS_UNDEFINED)),
                 // modulation
-                DtvProperty::new(DTV_MODULATION, QPSK),
+                DTV_MODULATION(DtvPropertyData::new(QPSK)),
                 // signal level
                 DtvProperty::new(DTV_STAT_SIGNAL_STRENGTH, 0),
                 // signal-to-noise ratio
