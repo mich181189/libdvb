@@ -1,3 +1,7 @@
+use itertools::Itertools;
+
+use crate::{dtv_property, get_dtv_property};
+
 mod status;
 pub mod sys;
 
@@ -58,7 +62,7 @@ pub struct FeDevice {
     delivery_system_list: Vec<fe_delivery_system>,
     frequency_range: Range<u32>,
     symbolrate_range: Range<u32>,
-    caps: u32,
+    caps: fe_caps,
 }
 
 
@@ -69,7 +73,7 @@ impl fmt::Display for FeDevice {
 
         write!(f, "Delivery system:")?;
         for v in &self.delivery_system_list {
-            write!(f, " {}", &v)?;
+            write!(f, " {}", v)?;
         }
         writeln!(f, "")?;
 
@@ -98,9 +102,9 @@ impl FeDevice {
     /// Clears frontend settings and event queue
     pub fn clear(&self) -> Result<()> {
         let cmdseq = [
-            DtvProperty::new(DTV_VOLTAGE, SEC_VOLTAGE_OFF),
-            DtvProperty::new(DTV_TONE, SEC_TONE_OFF),
-            DtvProperty::new(DTV_CLEAR, 0),
+            dtv_property!(DTV_VOLTAGE, SEC_VOLTAGE_OFF),
+            dtv_property!(DTV_TONE, SEC_TONE_OFF),
+            dtv_property!(DTV_CLEAR, 0),
         ];
         self.set_properties(&cmdseq).context("FE: clear")?;
 
@@ -139,22 +143,22 @@ impl FeDevice {
         // DVB v5 properties
 
         let mut cmdseq = [
-            DtvProperty::new(DTV_API_VERSION, 0),
-            DtvProperty::new(DTV_ENUM_DELSYS, 0),
+            dtv_property!(DTV_API_VERSION, 0),
+            dtv_property!(DTV_ENUM_DELSYS, DtvPropertyBuffer::default()),
         ];
         self.get_properties(&mut cmdseq).context("FE: get api version (deprecated driver)")?;
 
         // DVB API Version
-
-        self.api_version = unsafe { cmdseq[0].u.data as u16 };
+        self.api_version = get_dtv_property!(cmdseq[0], DTV_API_VERSION).context("FE: get api version")? as u16;
 
         // Suppoerted delivery systems
-
-        let u_buffer = unsafe { &cmdseq[1].u.buffer };
-        let u_buffer_len = ::std::cmp::min(u_buffer.len as usize, u_buffer.data.len());
-        u_buffer.data[.. u_buffer_len]
-            .iter()
-            .for_each(|v| self.delivery_system_list.push(*v as u32));
+        self.delivery_system_list = get_dtv_property!(cmdseq[1], DTV_ENUM_DELSYS).context("FE: get delivery systems")?
+            .into_iter()
+            .cloned()
+            .map_into::<u32>()
+            .map(fe_delivery_system::from_repr)
+            .collect::<Option<_>>()
+            .context("Invalid")?;
 
         // dev-file metadata
 
@@ -189,7 +193,7 @@ impl FeDevice {
             delivery_system_list: Vec::default(),
             frequency_range: 0 .. 0,
             symbolrate_range: 0 .. 0,
-            caps: 0,
+            caps: fe_caps::FE_IS_STUPID,
         };
 
         fe.get_info()?;
@@ -213,60 +217,54 @@ impl FeDevice {
 
     fn check_properties(&self, cmdseq: &[DtvProperty]) -> Result<()> {
         for p in cmdseq {
-            match p.cmd {
-                DTV_FREQUENCY => {
-                    let v = unsafe { p.u.data };
+            match p {
+                DTV_FREQUENCY(DtvPropertyData{data, ..}) => {
                     ensure!(
-                        self.frequency_range.contains(&v),
+                        self.frequency_range.contains(&data),
                         "FE: frequency out of range"
                     );
                 }
-                DTV_SYMBOL_RATE => {
-                    let v = unsafe { p.u.data };
+                DTV_SYMBOL_RATE(DtvPropertyData{data, ..})  => {
                     ensure!(
-                        self.symbolrate_range.contains(&v),
+                        self.symbolrate_range.contains(&data),
                         "FE: symbolrate out of range"
                     );
                 }
-                DTV_INVERSION => {
-                    let v = unsafe { p.u.data };
-                    if v == INVERSION_AUTO {
+                DTV_INVERSION(DtvPropertyData{data, ..})  => {
+                    if *data == INVERSION_AUTO {
                         ensure!(
-                            self.caps & FE_CAN_INVERSION_AUTO != 0,
+                            self.caps.contains(fe_caps::FE_CAN_INVERSION_AUTO),
                             "FE: auto inversion is not available"
                         );
                     }
                 }
-                DTV_TRANSMISSION_MODE => {
-                    let v = unsafe { p.u.data };
-                    if v == TRANSMISSION_MODE_AUTO {
+                DTV_TRANSMISSION_MODE(DtvPropertyData{data, ..})  => {
+                    if *data == TRANSMISSION_MODE_AUTO {
                         ensure!(
-                            self.caps & FE_CAN_TRANSMISSION_MODE_AUTO != 0,
+                            self.caps.contains(fe_caps::FE_CAN_TRANSMISSION_MODE_AUTO),
                             "FE: no auto transmission mode"
                         );
                     }
                 }
-                DTV_GUARD_INTERVAL => {
-                    let v = unsafe { p.u.data };
-                    if v == GUARD_INTERVAL_AUTO {
+                DTV_GUARD_INTERVAL(DtvPropertyData{data, ..})  => {
+                    if *data == GUARD_INTERVAL_AUTO {
                         ensure!(
-                            self.caps & FE_CAN_GUARD_INTERVAL_AUTO != 0,
+                            self.caps.contains(fe_caps::FE_CAN_GUARD_INTERVAL_AUTO),
                             "FE: no auto guard interval"
                         );
                     }
                 }
-                DTV_HIERARCHY => {
-                    let v = unsafe { p.u.data };
-                    if v == HIERARCHY_AUTO {
+                DTV_HIERARCHY(DtvPropertyData{data, ..})  => {
+                    if *data == HIERARCHY_AUTO {
                         ensure!(
-                            self.caps & FE_CAN_HIERARCHY_AUTO != 0,
+                            self.caps.contains(fe_caps::FE_CAN_HIERARCHY_AUTO),
                             "FE: no auto hierarchy"
                         );
                     }
                 }
-                DTV_STREAM_ID => {
+                DTV_STREAM_ID(..)  => {
                     ensure!(
-                        self.caps & FE_CAN_MULTISTREAM != 0,
+                        self.caps.contains(fe_caps::FE_CAN_MULTISTREAM),
                         "FE: no multistream"
                     );
                 }
@@ -344,7 +342,7 @@ impl FeDevice {
     /// - [`FE_TIMEDOUT`]
     /// - [`FE_REINIT`]
     pub fn read_status(&self) -> Result<fe_status> {
-        let mut result: u32 = FE_NONE as u32;
+        let mut result: u32 = 0;
 
         // FE_READ_STATUS
         ioctl_read!(#[inline] ioctl_call, b'o', 69, u32);
@@ -352,7 +350,7 @@ impl FeDevice {
             ioctl_call(self.as_raw_fd(), &mut result as *mut _)
         }.context("FE: read status")?;
 
-        Ok(fe_status::from_repr(result).context("Invalid status")?)
+        Ok(fe_status::from_bits(result).context("Invalid status")?)
     }
 
     /// Reads and returns a signal strength relative value (DVBv3 API)
@@ -382,7 +380,7 @@ impl FeDevice {
     }
 
     /// Reads and returns a bit error counter (DVBv3 API)
-    pub fn read_ber(&self) -> Result<u32> {
+    pub fn read_ber(&self) -> Result<u64> {
         let mut result: u32 = 0;
 
         // FE_READ_BER
@@ -391,11 +389,11 @@ impl FeDevice {
             ioctl_call(self.as_raw_fd(), &mut result as *mut _)
         }.context("FE: read ber")?;
 
-        Ok(result)
+        Ok(result as u64)
     }
 
     /// Reads and returns an uncorrected blocks counter (DVBv3 API)
-    pub fn read_unc(&self) -> Result<u32> {
+    pub fn read_unc(&self) -> Result<u64> {
         let mut result: u32 = 0;
 
         // FE_READ_UNCORRECTED_BLOCKS
@@ -404,7 +402,7 @@ impl FeDevice {
             ioctl_call(self.as_raw_fd(), &mut result as *mut _)
         }.context("FE: read uncorrected blocks")?;
 
-        Ok(result)
+        Ok(result as u64)
     }
 
     /// Turns on/off generation of the continuous 22kHz tone

@@ -1,87 +1,86 @@
 use std::{fmt, mem};
 
 pub use {
-    fe_caps::*, fe_code_rate::*, fe_delivery_system::*, fe_guard_interval::*, fe_hierarchy::*,
+    fe_code_rate::*, fe_delivery_system::*, fe_guard_interval::*, fe_hierarchy::*,
     fe_interleaving::*, fe_modulation::*, fe_pilot::*, fe_rolloff::*, fe_sec_mini_cmd::*,
-    fe_sec_tone_mode::*, fe_sec_voltage::*, fe_spectral_inversion::*, fe_status::*,
-    fe_transmit_mode::*, fe_type::*, fecap_scale_params::*, DtvProperty::*,
+    fe_sec_tone_mode::*, fe_sec_voltage::*, fe_spectral_inversion::*, fe_transmit_mode::*,
+    fe_type::*, DtvProperty::*, DtvStat::*,
 };
 
-use strum::{Display, FromRepr};
+use bitflags::bitflags;
+use strum::{Display, EnumString, FromRepr};
 
-/// Frontend capabilities
-#[repr(u32)]
-#[allow(non_camel_case_types)]
-#[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
-pub enum fe_caps {
-    /// There's something wrong at the frontend, and it can't report its capabilities
-    FE_IS_STUPID = 0,
-    /// Can auto-detect frequency spectral band inversion
-    FE_CAN_INVERSION_AUTO = 0x1,
-    /// Supports FEC 1/2
-    FE_CAN_FEC_1_2 = 0x2,
-    /// Supports FEC 2/3
-    FE_CAN_FEC_2_3 = 0x4,
-    /// Supports FEC 3/4
-    FE_CAN_FEC_3_4 = 0x8,
-    /// Supports FEC 4/5
-    FE_CAN_FEC_4_5 = 0x10,
-    /// Supports FEC 5/6
-    FE_CAN_FEC_5_6 = 0x20,
-    /// Supports FEC 6/7
-    FE_CAN_FEC_6_7 = 0x40,
-    /// Supports FEC 7/8
-    FE_CAN_FEC_7_8 = 0x80,
-    /// Supports FEC 8/9
-    FE_CAN_FEC_8_9 = 0x100,
-    /// Can auto-detect FEC
-    FE_CAN_FEC_AUTO = 0x200,
-    /// Supports QPSK modulation
-    FE_CAN_QPSK = 0x400,
-    /// Supports 16-QAM modulation
-    FE_CAN_QAM_16 = 0x800,
-    /// Supports 32-QAM modulation
-    FE_CAN_QAM_32 = 0x1000,
-    /// Supports 64-QAM modulation
-    FE_CAN_QAM_64 = 0x2000,
-    /// Supports 128-QAM modulation
-    FE_CAN_QAM_128 = 0x4000,
-    /// Supports 256-QAM modulation
-    FE_CAN_QAM_256 = 0x8000,
-    /// Can auto-detect QAM modulation
-    FE_CAN_QAM_AUTO = 0x10000,
-    /// Can auto-detect transmission mode
-    FE_CAN_TRANSMISSION_MODE_AUTO = 0x20000,
-    /// Can auto-detect bandwidth
-    FE_CAN_BANDWIDTH_AUTO = 0x40000,
-    /// Can auto-detect guard interval
-    FE_CAN_GUARD_INTERVAL_AUTO = 0x80000,
-    /// Can auto-detect hierarchy
-    FE_CAN_HIERARCHY_AUTO = 0x100000,
-    /// Supports 8-VSB modulation
-    FE_CAN_8VSB = 0x200000,
-    /// Supports 16-VSB modulation
-    FE_CAN_16VSB = 0x400000,
-    /// Unused
-    FE_HAS_EXTENDED_CAPS = 0x800000,
-    /// Supports multistream filtering
-    FE_CAN_MULTISTREAM = 0x4000000,
-    /// Supports "turbo FEC" modulation
-    FE_CAN_TURBO_FEC = 0x8000000,
-    /// Supports "2nd generation" modulation, e. g. DVB-S2, DVB-T2, DVB-C2
-    FE_CAN_2G_MODULATION = 0x10000000,
-    /// Unused
-    FE_NEEDS_BENDING = 0x20000000,
-    /// Can recover from a cable unplug automatically
-    FE_CAN_RECOVER = 0x40000000,
-    /// Can stop spurious TS data output
-    FE_CAN_MUTE_TS = 0x80000000,
+bitflags! {
+    /// Frontend capabilities
+    #[repr(C)]
+    pub struct fe_caps : u32 {
+        /// There's something wrong at the frontend, and it can't report its capabilities
+        const FE_IS_STUPID = 0x0;
+        /// Can auto-detect frequency spectral band inversion
+        const FE_CAN_INVERSION_AUTO = 0x1;
+        /// Supports FEC 1/2
+        const FE_CAN_FEC_1_2 = 0x2;
+        /// Supports FEC 2/3
+        const FE_CAN_FEC_2_3 = 0x4;
+        /// Supports FEC 3/4
+        const FE_CAN_FEC_3_4 = 0x8;
+        /// Supports FEC 4/5
+        const FE_CAN_FEC_4_5 = 0x10;
+        /// Supports FEC 5/6
+        const FE_CAN_FEC_5_6 = 0x20;
+        /// Supports FEC 6/7
+        const FE_CAN_FEC_6_7 = 0x40;
+        /// Supports FEC 7/8
+        const FE_CAN_FEC_7_8 = 0x80;
+        /// Supports FEC 8/9
+        const FE_CAN_FEC_8_9 = 0x100;
+        /// Can auto-detect FEC
+        const FE_CAN_FEC_AUTO = 0x200;
+        /// Supports QPSK modulation
+        const FE_CAN_QPSK = 0x400;
+        /// Supports 16-QAM modulation
+        const FE_CAN_QAM_16 = 0x800;
+        /// Supports 32-QAM modulation
+        const FE_CAN_QAM_32 = 0x1000;
+        /// Supports 64-QAM modulation
+        const FE_CAN_QAM_64 = 0x2000;
+        /// Supports 128-QAM modulation
+        const FE_CAN_QAM_128 = 0x4000;
+        /// Supports 256-QAM modulation
+        const FE_CAN_QAM_256 = 0x8000;
+        /// Can auto-detect QAM modulation
+        const FE_CAN_QAM_AUTO = 0x10000;
+        /// Can auto-detect transmission mode
+        const FE_CAN_TRANSMISSION_MODE_AUTO = 0x20000;
+        /// Can auto-detect bandwidth
+        const FE_CAN_BANDWIDTH_AUTO = 0x40000;
+        /// Can auto-detect guard interval
+        const FE_CAN_GUARD_INTERVAL_AUTO = 0x80000;
+        /// Can auto-detect hierarchy
+        const FE_CAN_HIERARCHY_AUTO = 0x100000;
+        /// Supports 8-VSB modulation
+        const FE_CAN_8VSB = 0x200000;
+        /// Supports 16-VSB modulation
+        const FE_CAN_16VSB = 0x400000;
+        /// Unused
+        const FE_HAS_EXTENDED_CAPS = 0x800000;
+        /// Supports multistream filtering
+        const FE_CAN_MULTISTREAM = 0x4000000;
+        /// Supports "turbo FEC" modulation
+        const FE_CAN_TURBO_FEC = 0x8000000;
+        /// Supports "2nd generation" modulation, e. g. DVB-S2, DVB-T2, DVB-C2
+        const FE_CAN_2G_MODULATION = 0x10000000;
+        /// Unused
+        const FE_NEEDS_BENDING = 0x20000000;
+        /// Can recover from a cable unplug automatically
+        const FE_CAN_RECOVER = 0x40000000;
+        /// Can stop spurious TS data output
+        const FE_CAN_MUTE_TS = 0x80000000;
+    }
 }
 
 /// DEPRECATED: Should be kept just due to backward compatibility
 #[repr(u32)]
-#[allow(non_camel_case_types)]
 #[allow(non_camel_case_types)]
 #[derive(Debug, PartialEq, Eq, FromRepr)]
 pub enum fe_type {
@@ -100,7 +99,7 @@ pub struct FeInfo {
     /// Name of the frontend
     pub name: [std::os::raw::c_char; 128],
     /// DEPRECATED: frontend delivery system
-    pub fe_type: u32,
+    pub fe_type: fe_type,
     /// Minimal frequency supported by the frontend
     pub frequency_min: u32,
     /// Maximal frequency supported by the frontend
@@ -118,7 +117,7 @@ pub struct FeInfo {
     /// DEPRECATED
     pub notifier_delay: u32,
     /// Capabilities supported by the frontend
-    pub caps: u32,
+    pub caps: fe_caps,
 }
 
 impl Default for FeInfo {
@@ -182,7 +181,7 @@ impl Default for DiseqcSlaveReply {
 /// DC Voltage used to feed the LNBf
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, FromRepr)]
 pub enum fe_sec_voltage {
     /// Output 13V to the LNB. Vertical linear. Right circular.
     SEC_VOLTAGE_13 = 0,
@@ -194,7 +193,7 @@ pub enum fe_sec_voltage {
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
+#[derive(Debug,Copy, Clone,  PartialEq, Eq, FromRepr)]
 pub enum fe_sec_tone_mode {
     /// Sends a 22kHz tone burst to the antenna
     SEC_TONE_ON = 0,
@@ -205,7 +204,7 @@ pub enum fe_sec_tone_mode {
 /// Type of mini burst to be sent
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, FromRepr)]
 pub enum fe_sec_mini_cmd {
     /// Sends a mini-DiSEqC 22kHz '0' Tone Burst to select satellite-A
     SEC_MINI_A = 0,
@@ -213,28 +212,28 @@ pub enum fe_sec_mini_cmd {
     SEC_MINI_B = 1,
 }
 
-/// Enumerates the possible frontend status
-#[repr(u32)]
-#[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
-pub enum fe_status {
-    /// The frontend doesn't have any kind of lock. That's the initial frontend status
-    FE_NONE = 0x00,
-    /// Has found something above the noise level
-    FE_HAS_SIGNAL = 0x01,
-    /// Has found a signal
-    FE_HAS_CARRIER = 0x02,
-    /// FEC inner coding (Viterbi, LDPC or other inner code) is stable.
-    FE_HAS_VITERBI = 0x04,
-    /// Synchronization bytes was found
-    FE_HAS_SYNC = 0x08,
-    /// Digital TV were locked and everything is working
-    FE_HAS_LOCK = 0x10,
-    /// Fo lock within the last about 2 seconds
-    FE_TIMEDOUT = 0x20,
-    /// Frontend was reinitialized, application is recommended
-    /// to reset DiSEqC, tone and parameters
-    FE_REINIT = 0x40,
+bitflags! {
+    /// Enumerates the possible frontend status
+    #[repr(C)]
+    pub struct fe_status : u32 {
+        /// The frontend doesn't have any kind of lock. That's the initial frontend status
+        const FE_NONE = 0x00;
+        /// Has found something above the noise level
+        const FE_HAS_SIGNAL = 0x01;
+        /// Has found a signal
+        const FE_HAS_CARRIER = 0x02;
+        /// FEC inner coding (Viterbi, LDPC or other inner code) is stable.
+        const FE_HAS_VITERBI = 0x04;
+        /// Synchronization bytes was found
+        const FE_HAS_SYNC = 0x08;
+        /// Digital TV were locked and everything is working
+        const FE_HAS_LOCK = 0x10;
+        /// Fo lock within the last about 2 seconds
+        const FE_TIMEDOUT = 0x20;
+        /// Frontend was reinitialized, application is recommended
+        /// to reset DiSEqC, tone and parameters
+        const FE_REINIT = 0x40;
+    }
 }
 
 /// Spectral band inversion
@@ -271,7 +270,7 @@ pub enum fe_code_rate {
 /// Type of modulation/constellation
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
+#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_modulation {
     QPSK = 0,
     QAM_16 = 1,
@@ -294,7 +293,7 @@ pub enum fe_modulation {
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
+#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_transmit_mode {
     TRANSMISSION_MODE_2K = 0,
     TRANSMISSION_MODE_8K = 1,
@@ -309,7 +308,7 @@ pub enum fe_transmit_mode {
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
+#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_guard_interval {
     GUARD_INTERVAL_1_32 = 0,
     GUARD_INTERVAL_1_16 = 1,
@@ -326,7 +325,7 @@ pub enum fe_guard_interval {
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
+#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_hierarchy {
     HIERARCHY_NONE = 0,
     HIERARCHY_1 = 1,
@@ -337,7 +336,7 @@ pub enum fe_hierarchy {
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
+#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_interleaving {
     INTERLEAVING_NONE = 0,
     INTERLEAVING_AUTO = 1,
@@ -347,7 +346,7 @@ pub enum fe_interleaving {
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
+#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_pilot {
     PILOT_ON = 0,
     PILOT_OFF = 1,
@@ -356,7 +355,7 @@ pub enum fe_pilot {
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
+#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_rolloff {
     ROLLOFF_35 = 0,
     ROLLOFF_20 = 1,
@@ -367,7 +366,7 @@ pub enum fe_rolloff {
     ROLLOFF_5 = 6,
 }
 
-#[derive(Display, Debug)]
+#[derive(EnumString, Display, FromRepr, Debug, Copy, Clone)]
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 pub enum fe_delivery_system {
@@ -413,68 +412,99 @@ pub enum fe_delivery_system {
     SYS_DVBC2 = 19,
 }
 
+impl Default for fe_delivery_system {
+    fn default() -> fe_delivery_system {
+        SYS_UNDEFINED
+    }
+}
+
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
+#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_lna {
     LNA_OFF = 0,
     LNA_ON = 1,
     LNA_AUTO = 0xFFFFFFFF,
 }
 
-/// scale types for the quality parameters
-mod fecap_scale_params {
-    /// That QoS measure is not available. That could indicate
-    /// a temporary or a permanent condition.
-    pub const FE_SCALE_NOT_AVAILABLE: u8 = 0;
-    /// The scale is measured in 0.001 dB steps, typically used on signal measures.
-    pub const FE_SCALE_DECIBEL: u8 = 1;
-    /// The scale is a relative percentual measure,
-    /// ranging from 0 (0%) to 0xffff (100%).
-    pub const FE_SCALE_RELATIVE: u8 = 2;
-    /// The scale counts the occurrence of an event, like
-    /// bit error, block error, lapsed time.
-    pub const FE_SCALE_COUNTER: u8 = 3;
+// From here on, structures passed to Linux
+pub trait WrappedSlice<T> {
+    fn slice(&self) -> &[T];
+}
+
+pub trait DtvStatType {
+    fn get_decibel(&self) -> Option<i64>;
+    fn get_relative(&self) -> Option<u16>;
+    fn get_counter(&self) -> Option<u64>;
+    fn get_decibel_float(&self) -> Option<f64> {
+        Some((self.get_decibel()? as f64) / 1000.0)
+    }
+    fn get_relative_percentage(&self) -> Option<u8> {
+        Some((((self.get_relative()? as u32) * 100) / 65535) as u8)
+    }
+}
+
+#[repr(C, packed)]
+#[derive(Debug, Copy, Clone)]
+pub struct NoScale {
+    __reserved: [u8; 8],
+}
+
+#[repr(C, packed)]
+#[derive(Debug, Copy, Clone)]
+pub struct ScaleDecibel {
+    pub scale: i64,
+}
+
+#[repr(C, packed)]
+#[derive(Debug, Copy, Clone)]
+pub struct ScaleRelative {
+    pub scale: u16,
+    __reserved: [u8; 6],
+}
+
+#[repr(C, packed)]
+#[derive(Debug, Copy, Clone)]
+pub struct ScaleCounter {
+    pub scale: u64,
 }
 
 /// Used for reading a DTV status property
-#[repr(C, packed)]
-#[derive(Copy, Clone)]
-pub struct DtvStats {
-    pub scale: u8, // fecap_scale_params
-    pub value: i64,
+#[repr(u8)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, Copy, Clone)]
+pub enum DtvStat {
+    /// That QoS measure is not available. That could indicate
+    /// a temporary or a permanent condition.
+    FE_SCALE_NOT_AVAILABLE(NoScale),
+    /// The scale is measured in 0.001 dB steps, typically used on signal measures.
+    FE_SCALE_DECIBEL(ScaleDecibel),
+    /// The scale is a relative percentual measure,
+    /// ranging from 0 (0%) to 0xffff (100%).
+    FE_SCALE_RELATIVE(ScaleRelative),
+    /// The scale counts the occurrence of an event, like
+    /// bit error, block error, lapsed time.
+    FE_SCALE_COUNTER(ScaleCounter),
 }
 
-impl fmt::Debug for DtvStats {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut s = f.debug_struct("DtvStats");
-
-        const FIELD_SCALE: &str = "scale";
-        const FIELD_VALUE: &str = "value";
-
-        match self.scale {
-            FE_SCALE_NOT_AVAILABLE => {
-                s.field(FIELD_SCALE, &"FE_SCALE_NOT_AVAILABLE");
-                s.field(FIELD_VALUE, &"not available");
-            }
-            FE_SCALE_DECIBEL => {
-                s.field(FIELD_SCALE, &"FE_SCALE_DECIBEL");
-                s.field(FIELD_VALUE, &{ (self.value as f64) / 1000.0 });
-            }
-            FE_SCALE_RELATIVE => {
-                s.field(FIELD_SCALE, &"FE_SCALE_RELATIVE");
-                s.field(FIELD_VALUE, &{ self.value as u64 });
-            }
-            FE_SCALE_COUNTER => {
-                s.field(FIELD_SCALE, &"FE_SCALE_COUNTER");
-                s.field(FIELD_VALUE, &{ self.value as u64 });
-            }
-            _ => {
-                s.field(FIELD_SCALE, &{ self.scale });
-                s.field(FIELD_VALUE, &"invalid scale format");
-            }
-        };
-        s.finish()
+impl DtvStatType for DtvStat {
+    fn get_decibel(&self) -> Option<i64> {
+        match self {
+            FE_SCALE_DECIBEL(s) => Some(s.scale),
+            _ => None,
+        }
+    }
+    fn get_relative(&self) -> Option<u16> {
+        match self {
+            FE_SCALE_RELATIVE(s) => Some(s.scale),
+            _ => None,
+        }
+    }
+    fn get_counter(&self) -> Option<u64> {
+        match self {
+            FE_SCALE_COUNTER(s) => Some(s.scale),
+            _ => None,
+        }
     }
 }
 
@@ -484,30 +514,109 @@ pub const MAX_DTV_STATS: usize = 4;
 #[repr(C, packed)]
 #[derive(Copy, Clone)]
 pub struct DtvFrontendStats {
-    pub len: u8,
-    pub stat: [DtvStats; MAX_DTV_STATS],
+    len: u8,
+    stat: [DtvStat; MAX_DTV_STATS],
+}
+
+impl Default for DtvFrontendStats {
+    fn default() -> Self {
+        unsafe { mem::zeroed::<Self>() }
+    }
+}
+
+impl DtvFrontendStats {
+    pub fn new(stat: DtvStat) -> Self {
+        let mut result = Self::default();
+        result.len = 1;
+        result.stat[0] = stat;
+        result
+    }
+}
+
+impl WrappedSlice<DtvStat> for DtvFrontendStats {
+    fn slice(&self) -> &[DtvStat] {
+        let len = ::std::cmp::min(self.len as usize, self.stat.len());
+        &self.stat[0..len]
+    }
+}
+
+impl DtvStatType for DtvFrontendStats {
+    fn get_decibel(&self) -> Option<i64> {
+        for stat in self.into_iter() {
+            if let Some(v) = stat.get_decibel() {
+                return Some(v);
+            }
+        }
+        None
+    }
+    fn get_relative(&self) -> Option<u16> {
+        for stat in self.into_iter() {
+            if let Some(v) = stat.get_relative() {
+                return Some(v);
+            }
+        }
+        None
+    }
+    fn get_counter(&self) -> Option<u64> {
+        for stat in self.into_iter() {
+            if let Some(v) = stat.get_counter() {
+                return Some(v);
+            }
+        }
+        None
+    }
+}
+
+impl<'a> IntoIterator for &'a DtvFrontendStats {
+    type Item = &'a DtvStat;
+    type IntoIter = core::slice::Iter<'a, DtvStat>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.slice().iter()
+    }
 }
 
 impl fmt::Debug for DtvFrontendStats {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let len = ::std::cmp::min(self.len as usize, self.stat.len());
-        f.debug_list().entries(self.stat[0..len].iter()).finish()
+        f.debug_list().entries(self.into_iter()).finish()
     }
 }
 
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct DtvPropertyBuffer {
-    pub data: [u8; 32],
-    pub len: u32,
+    data: [u8; 32],
+    len: u32,
     __reserved_1: [u32; 3],
     __reserved_2: *mut std::ffi::c_void,
 }
 
+impl Default for DtvPropertyBuffer {
+    #[inline]
+    fn default() -> Self {
+        unsafe { mem::zeroed::<Self>() }
+    }
+}
+
+impl WrappedSlice<u8> for DtvPropertyBuffer {
+    fn slice(&self) -> &[u8] {
+        let len = ::std::cmp::min(self.len as usize, self.data.len());
+        &self.data[0..len]
+    }
+}
+
+impl<'a> IntoIterator for &'a DtvPropertyBuffer {
+    type Item = &'a u8;
+    type IntoIter = core::slice::Iter<'a, u8>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.slice().iter()
+    }
+}
+
 impl fmt::Debug for DtvPropertyBuffer {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let len = ::std::cmp::min(self.len as usize, self.data.len());
-        f.debug_list().entries(self.data[0..len].iter()).finish()
+        f.debug_list().entries(self.into_iter()).finish()
     }
 }
 
@@ -520,12 +629,20 @@ pub struct DtvPropertyData<T> {
 }
 
 impl<T> DtvPropertyData<T> {
+    #[inline]
     pub fn new(data: T) -> Self {
         Self {
             __reserved: [0, 0, 0],
             data,
-            result: 0
+            result: 0,
         }
+    }
+}
+
+impl<T> Default for DtvPropertyData<T> {
+    #[inline]
+    fn default() -> Self {
+        unsafe { mem::zeroed::<Self>() }
     }
 }
 
@@ -550,6 +667,7 @@ type DtvPropertyDeprecated = DtvPropertyNotImplementedLinux;
 #[repr(u32, C)]
 #[allow(non_camel_case_types)]
 #[derive(Debug)]
+#[allow(deprecated)]
 pub enum DtvProperty {
     DTV_UNDEFINED(DtvPropertyNotImplementedLinux),
     DTV_TUNE(DtvPropertyRequest),
@@ -562,7 +680,7 @@ pub enum DtvProperty {
     DTV_SYMBOL_RATE(DtvPropertyData<u32>),
     DTV_INNER_FEC(DtvPropertyData<fe_code_rate>),
     DTV_VOLTAGE(DtvPropertyData<fe_sec_voltage>),
-    DTV_TONE(DtvPropertyNotImplementedLinux),
+    DTV_TONE(DtvPropertyData<fe_sec_tone_mode>),
     DTV_PILOT(DtvPropertyData<fe_pilot>),
     DTV_ROLLOFF(DtvPropertyData<fe_rolloff>),
     DTV_DISEQC_SLAVE_REPLY(DtvPropertyNotImplementedLinux),
@@ -645,6 +763,46 @@ pub enum DtvProperty {
 
     /* Physical layer scrambling */
     DTV_SCRAMBLING_SEQUENCE_INDEX(DtvPropertyRequest),
+}
+
+#[macro_export]
+macro_rules! dtv_property {
+    ( $property:ident, $data:expr ) => {
+        $property(DtvPropertyData::new($data))
+    };
+    ( $property:ident($data:expr) ) => {
+        $property(DtvPropertyData::new($data))
+    };
+    ( $property:expr ) => {
+        $property
+    };
+}
+
+#[macro_export]
+macro_rules! get_dtv_property {
+    ( $expression:expr, $property:ident ) => {{
+        match $expression {
+            $property(d) => ::std::option::Option::Some(d.data),
+            _ => ::std::option::Option::None,
+        }
+    }};
+}
+
+#[macro_export]
+macro_rules! req_dtv_properties {
+    ( $device:expr, $( $property:ident ),+ ) => { {
+        let mut input = [ $( $property(DtvPropertyData::default()), )* ];
+        $device.get_properties(&mut input)?;
+        let mut iterator = input.iter();
+        (
+            $(
+                (match iterator.next() {
+                    Some($property(d)) => ::std::option::Option::Some(d.data),
+                    _ => ::std::option::Option::None,
+                }),
+            )*
+        )
+    }}
 }
 
 /// num of properties cannot exceed DTV_IOCTL_MAX_MSGS per ioctl

@@ -29,14 +29,10 @@ use {
             },
         },
     },
-
-    libdvb::{
-        CaDevice,
-    },
 };
 
 
-fn start_ca(adapter: u32, device: u32) -> Result<()> {
+fn start_ca(_adapter: u32, _device: u32) -> Result<()> {
     // let mut ca = CaDevice::open(path, 0)?;
 
     let timer = TimerFd::new(

@@ -1,16 +1,10 @@
+use crate::req_dtv_properties;
+
 use {
-    std::{
-        fmt,
-    },
-
+    super::{sys::*, FeDevice},
     anyhow::Result,
-
-    super::{
-        FeDevice,
-        sys::*,
-    },
+    std::fmt,
 };
-
 
 /// Frontend status
 #[derive(Debug)]
@@ -18,41 +12,33 @@ pub struct FeStatus {
     /// `sys::frontend::FeStatus`
     status: fe_status,
 
-    /// properties
-    props: [DtvProperty; 6],
+    delivery_system: Option<fe_delivery_system>,
+    modulation: Option<fe_modulation>,
+    signal_strength_decibel: Option<f64>,
+    signal_strength_percentage: Option<u8>,
+    snr_decibel: Option<f64>,
+    snr_percentage: Option<u8>,
+    // ber - number of bit errors
+    ber: Option<u64>,
+    // unc - number of block errors
+    unc: Option<u64>,
 }
-
-
-const IDX_DELIVERY_SYSTEM: usize = 0;
-const IDX_MODULATION: usize = 1;
-const IDX_SIGNAL_STRENGTH: usize = 2;
-const IDX_SNR: usize = 3;
-const IDX_BER: usize = 4;
-const IDX_UNC: usize = 5;
-
 
 impl Default for FeStatus {
     fn default() -> FeStatus {
         FeStatus {
-            status: 0,
-            props: [
-                // delivery system
-                DTV_DELIVERY_SYSTEM(DtvPropertyData::new(SYS_UNDEFINED)),
-                // modulation
-                DTV_MODULATION(DtvPropertyData::new(QPSK)),
-                // signal level
-                DtvProperty::new(DTV_STAT_SIGNAL_STRENGTH, 0),
-                // signal-to-noise ratio
-                DtvProperty::new(DTV_STAT_CNR, 0),
-                // ber - number of bit errors
-                DtvProperty::new(DTV_STAT_PRE_ERROR_BIT_COUNT, 0),
-                // unc - number of block errors
-                DtvProperty::new(DTV_STAT_ERROR_BLOCK_COUNT, 0),
-            ],
+            status: fe_status::FE_NONE,
+            delivery_system: None,
+            modulation: None,
+            signal_strength_decibel: None,
+            signal_strength_percentage: None,
+            snr_decibel: None,
+            snr_percentage: None,
+            ber: None,
+            unc: None,
         }
     }
 }
-
 
 /// Returns an object that implements `Display` for different verbosity levels
 ///
@@ -85,18 +71,22 @@ impl Default for FeStatus {
 /// ```
 impl fmt::Display for FeStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.status == FE_NONE {
+        if self.status == fe_status::FE_NONE {
             write!(f, "OFF")?;
             return Ok(());
         }
 
-        if self.status & FE_HAS_LOCK != 0 {
-            write!(f, "LOCK {}", self.get_delivery_system())?;
+        if self.status.contains(fe_status::FE_HAS_LOCK) {
+            write!(
+                f,
+                "LOCK {}",
+                self.get_delivery_system().as_ref().unwrap_or(&fe_delivery_system::SYS_UNDEFINED)
+            )?;
         } else {
             write!(f, "NO-LOCK 0x{:02X}", self.status)?;
         }
 
-        if self.status & FE_HAS_SIGNAL == 0 {
+        if !self.status.contains(fe_status::FE_HAS_SIGNAL) {
             return Ok(());
         }
 
@@ -107,7 +97,7 @@ impl fmt::Display for FeStatus {
             self.get_signal_strength().unwrap_or(0)
         )?;
 
-        if self.status & FE_HAS_CARRIER == 0 {
+        if !self.status.contains(fe_status::FE_HAS_CARRIER) {
             return Ok(());
         }
 
@@ -118,7 +108,7 @@ impl fmt::Display for FeStatus {
             self.get_snr().unwrap_or(0)
         )?;
 
-        if self.status & FE_HAS_LOCK == 0 {
+        if !self.status.contains(fe_status::FE_HAS_LOCK) {
             return Ok(());
         }
 
@@ -140,241 +130,139 @@ impl fmt::Display for FeStatus {
     }
 }
 
-
 impl FeStatus {
     /// Returns current delivery system
     #[inline]
-    pub fn get_delivery_system(&self) -> u32 { unsafe { self.props[IDX_DELIVERY_SYSTEM].u.data } }
+    pub fn get_delivery_system(&self) -> &Option<fe_delivery_system> {
+        &self.delivery_system
+    }
 
     /// Returns current modulation
     #[inline]
-    pub fn get_modulation(&self) -> u32 { unsafe { self.props[IDX_MODULATION].u.data } }
+    pub fn get_modulation(&self) -> &Option<fe_modulation> {
+        &self.modulation
+    }
 
     /// Returns Signal Strength in dBm
-    pub fn get_signal_strength_decibel(&self) -> Option<f64> {
-        let stat = unsafe { &self.props[IDX_SIGNAL_STRENGTH].u.st.stat[0] };
-        if stat.scale == FE_SCALE_DECIBEL {
-            Some((stat.value as f64) / 1000.0)
-        } else {
-            None
-        }
+    pub fn get_signal_strength_decibel(&self) -> &Option<f64> {
+        &self.signal_strength_decibel
     }
 
     /// Returns Signal Strength in percentage
-    pub fn get_signal_strength(&self) -> Option<u32> {
-        let stat = unsafe { &self.props[IDX_SIGNAL_STRENGTH].u.st.stat[1] };
-        if stat.scale == FE_SCALE_RELATIVE {
-            Some(((stat.value & 0xFFFF) * 100 / 65535) as u32)
-        } else {
-            None
-        }
+    pub fn get_signal_strength(&self) -> &Option<u8> {
+        &self.signal_strength_percentage
     }
 
     /// Returns Signal to noise ratio in dB
-    pub fn get_snr_decibel(&self) -> Option<f64> {
-        let stat = unsafe { &self.props[IDX_SNR].u.st.stat[0] };
-        if stat.scale == FE_SCALE_DECIBEL {
-            Some((stat.value as f64) / 1000.0)
-        } else {
-            None
-        }
+    pub fn get_snr_decibel(&self) -> &Option<f64> {
+        &self.snr_decibel
     }
 
     /// Returns Signal Strength in percentage
-    pub fn get_snr(&self) -> Option<u32> {
-        let stat = unsafe { &self.props[IDX_SNR].u.st.stat[1] };
-        if stat.scale == FE_SCALE_RELATIVE {
-            Some(((stat.value & 0xFFFF) * 100 / 65535) as u32)
-        } else {
-            None
-        }
+    pub fn get_snr(&self) -> &Option<u8> {
+        &self.snr_percentage
     }
 
     /// Returns BER value if available
-    pub fn get_ber(&self) -> Option<u32> {
-        let stat = unsafe { &self.props[IDX_BER].u.st.stat[0] };
-        if stat.scale == FE_SCALE_COUNTER {
-            Some((stat.value & 0xFFFF_FFFF) as u32)
-        } else {
-            None
-        }
+    pub fn get_ber(&self) -> &Option<u64> {
+        &self.ber
     }
 
     /// Returns UNC value if available
-    pub fn get_unc(&self) -> Option<u32> {
-        let stat = unsafe { &self.props[IDX_UNC].u.st.stat[0] };
-        if stat.scale == FE_SCALE_COUNTER {
-            Some((stat.value & 0xFFFF_FFFF) as u32)
-        } else {
-            None
-        }
+    pub fn get_unc(&self) -> &Option<u64> {
+        &self.unc
     }
 
-    fn normalize_signal_strength(&mut self) -> Result<()> {
-        let mut stats = unsafe { &mut self.props[IDX_SIGNAL_STRENGTH].u.st };
-
-        for i in usize::from(stats.len) .. 2 {
-            stats.stat[i].scale = FE_SCALE_NOT_AVAILABLE;
-            stats.stat[i].value = 0;
-        }
-
-        stats.len = 2;
-
-        if stats.stat[0].scale == FE_SCALE_RELATIVE {
-            stats.stat.swap(0, 1);
-            return Ok(())
-        }
-
-        if stats.stat[1].scale == FE_SCALE_RELATIVE || (self.status & FE_HAS_SIGNAL) == 0 {
-            return Ok(())
-        }
-
-        // calculate relative value
-
-        if stats.stat[0].scale == FE_SCALE_DECIBEL {
-            // TODO: check delivery_system
-
-            let lo: i64 = -85000;
-            let hi: i64 = -6000;
-
-            stats.stat[1].scale = FE_SCALE_RELATIVE;
-            stats.stat[1].value = {
-                if stats.stat[0].value > hi {
-                    65545
-                } else if stats.stat[0].value < lo {
-                    0
-                } else {
-                    65545 * (lo - stats.stat[0].value) / (lo - hi)
-                }
-            };
-        }
-
-        Ok(())
-    }
-
-    fn normalize_snr(&mut self) -> Result<()> {
-        let delivery_system = self.get_delivery_system();
-        let modulation = self.get_modulation();
-
-        let mut stats = unsafe { &mut self.props[IDX_SNR].u.st };
-
-        for i in usize::from(stats.len) .. 2 {
-            stats.stat[i].scale = FE_SCALE_NOT_AVAILABLE;
-            stats.stat[i].value = 0;
-        }
-
-        stats.len = 2;
-
-        if stats.stat[0].scale == FE_SCALE_RELATIVE {
-            stats.stat.swap(0, 1);
-            return Ok(())
-        }
-
-        if stats.stat[1].scale == FE_SCALE_RELATIVE || (self.status & FE_HAS_CARRIER) == 0 {
-            return Ok(())
-        }
-
-        // calculate relative value
-
-        if stats.stat[0].scale == FE_SCALE_DECIBEL {
-            let hi = match delivery_system {
-                SYS_DVBS |
-                SYS_DVBS2 => 15000,
-
-                SYS_DVBC_ANNEX_A |
-                SYS_DVBC_ANNEX_B |
-                SYS_DVBC_ANNEX_C |
-                SYS_DVBC2 => 28000,
-
-                SYS_DVBT |
-                SYS_DVBT2 => 19000,
-
-                SYS_ATSC => {
-                    match modulation {
-                        VSB_8 | VSB_16 => 19000,
-                        _ => 28000,
+    fn normalize_signal_strength(&mut self, stats: DtvFrontendStats) {
+        self.signal_strength_decibel = stats.get_decibel_float();
+        self.signal_strength_percentage = match (stats.get_relative(), stats.get_decibel()) {
+            (Some(v), _) => Some(((v as u32) * 100 / 65535) as u8),
+            (None, Some(decibel)) if self.status.contains(fe_status::FE_HAS_SIGNAL) => {
+                // TODO: check delivery_system
+                // TODO: this logic looks very sus
+                let lo: i64 = -85000;
+                let hi: i64 = -6000;
+                Some({
+                    if decibel > hi {
+                        100
+                    } else if decibel < lo {
+                        0
+                    } else {
+                        (((lo - decibel) * 100) / (lo - hi)) as u8
                     }
+                })
+            }
+            _ => None,
+        };
+    }
+
+    fn normalize_snr(&mut self, stats: DtvFrontendStats) {
+        self.signal_strength_decibel = stats.get_decibel_float();
+        self.signal_strength_percentage = match (stats.get_relative(), stats.get_decibel()) {
+            (Some(v), _) => Some(((v as u32) * 100 / 65535) as u8),
+            (None, Some(decibel)) if self.status.contains(fe_status::FE_HAS_CARRIER) => {
+                match match self.delivery_system {
+                    Some(SYS_DVBS | SYS_DVBS2) => Some(15000),
+
+                    Some(SYS_DVBC_ANNEX_A | SYS_DVBC_ANNEX_B | SYS_DVBC_ANNEX_C | SYS_DVBC2) => {
+                        Some(28000)
+                    }
+
+                    Some(SYS_DVBT | SYS_DVBT2) => Some(19000),
+
+                    Some(SYS_ATSC) => Some(match self.modulation {
+                        Some(VSB_8 | VSB_16) => 19000,
+                        _ => 28000,
+                    }),
+
+                    _ => None,
+                } {
+                    Some(_) if decibel <= 0 => Some(0),
+                    Some(vhi) if decibel >= vhi => Some(100),
+                    Some(vhi) => Some(((decibel * 100) / vhi) as u8),
+                    _ => None,
                 }
-
-                _ => return Ok(()),
-            };
-
-            stats.stat[1].scale = FE_SCALE_RELATIVE;
-            stats.stat[1].value = {
-                if stats.stat[0].value >= hi {
-                    65535
-                } else if stats.stat[0].value <= 0 {
-                    0
-                } else {
-                    65535 * stats.stat[0].value / hi
-                }
-            };
-        }
-
-        Ok(())
-    }
-
-    fn normalize_ber(&mut self, fe: &FeDevice) -> Result<()> {
-        let mut stats = unsafe { &mut self.props[IDX_BER].u.st };
-
-        if stats.len == 0 {
-            stats.stat[0].scale = FE_SCALE_NOT_AVAILABLE;
-            stats.stat[0].value = 0;
-            stats.len = 1;
-        }
-
-        if stats.stat[0].scale == FE_SCALE_COUNTER || (self.status & FE_HAS_LOCK) == 0 {
-            return Ok(())
-        }
-
-        if let Ok(value) = fe.read_ber() {
-            stats.stat[0].scale = FE_SCALE_COUNTER;
-            stats.stat[0].value = i64::from(value);
-        }
-
-        Ok(())
-    }
-
-    fn normalize_unc(&mut self, fe: &FeDevice) -> Result<()> {
-        let mut stats = unsafe { &mut self.props[IDX_UNC].u.st };
-
-        if stats.len == 0 {
-            stats.stat[0].scale = FE_SCALE_NOT_AVAILABLE;
-            stats.stat[0].value = 0;
-            stats.len = 1;
-        }
-
-        if stats.stat[0].scale == FE_SCALE_COUNTER || (self.status & FE_HAS_LOCK) == 0 {
-            return Ok(())
-        }
-
-        if let Ok(value) = fe.read_unc() {
-            stats.stat[0].scale = FE_SCALE_COUNTER;
-            stats.stat[0].value = i64::from(value);
-        }
-
-        Ok(())
-    }
-
-    /// set decibel to `stat[0]` and relative to `stat[1]` and fallback to DVBv3 API
-    fn normalize_props(&mut self, fe: &FeDevice) -> Result<()> {
-        self.normalize_signal_strength()?;
-        self.normalize_snr()?;
-        self.normalize_ber(fe)?;
-        self.normalize_unc(fe)?;
-
-        Ok(())
+            }
+            _ => None,
+        };
     }
 
     /// Reads frontend status with fallback to DVBv3 API
     pub fn read(&mut self, fe: &FeDevice) -> Result<()> {
         self.status = fe.read_status()?;
 
-        if self.status == FE_NONE {
+        if self.status == fe_status::FE_NONE {
             return Ok(());
         }
 
-        fe.get_properties(&mut self.props)?;
-        self.normalize_props(fe)
+        let (delivery_system, modulation, signal_strength, snr, ber, unc) = req_dtv_properties!(
+            fe,
+            DTV_DELIVERY_SYSTEM,
+            DTV_MODULATION,
+            DTV_STAT_SIGNAL_STRENGTH,
+            DTV_STAT_CNR,
+            DTV_STAT_PRE_ERROR_BIT_COUNT,
+            DTV_STAT_ERROR_BLOCK_COUNT
+        );
+        self.delivery_system = delivery_system;
+        self.modulation = modulation;
+        if let Some(v) = snr {
+            self.normalize_snr(v);
+        }
+        if let Some(v) = signal_strength {
+            self.normalize_signal_strength(v);
+        }
+        self.ber = match ber.and_then(|v| v.get_counter()) {
+            Some(v) => Some(v),
+            None if self.status.contains(fe_status::FE_HAS_LOCK) => Some(fe.read_ber()?),
+            None => None,
+        };
+        self.unc = match unc.and_then(|v| v.get_counter()) {
+            Some(v) => Some(v),
+            None if self.status.contains(fe_status::FE_HAS_LOCK) => Some(fe.read_unc()?),
+            None => None,
+        };
+
+        Ok(())
     }
 }
