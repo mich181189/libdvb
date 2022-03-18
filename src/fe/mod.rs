@@ -1,6 +1,4 @@
-use itertools::Itertools;
-
-use crate::{dtv_property, get_dtv_property};
+use crate::{dtv_property, req_dtv_properties};
 
 mod status;
 pub mod sys;
@@ -141,24 +139,17 @@ impl FeDevice {
         self.caps = feinfo.caps;
 
         // DVB v5 properties
-
-        let mut cmdseq = [
-            dtv_property!(DTV_API_VERSION, 0),
-            dtv_property!(DTV_ENUM_DELSYS, DtvPropertyBuffer::default()),
-        ];
-        self.get_properties(&mut cmdseq).context("FE: get api version (deprecated driver)")?;
+        let (api_version, enum_delsys) = req_dtv_properties!(
+            self,
+            DTV_API_VERSION,
+            DTV_ENUM_DELSYS
+        ).context("FE: get api version (deprecated driver)")?;
 
         // DVB API Version
-        self.api_version = get_dtv_property!(cmdseq[0], DTV_API_VERSION).context("FE: get api version")? as u16;
+        self.api_version = api_version as u16;
 
         // Suppoerted delivery systems
-        self.delivery_system_list = get_dtv_property!(cmdseq[1], DTV_ENUM_DELSYS).context("FE: get delivery systems")?
-            .into_iter()
-            .cloned()
-            .map_into::<u32>()
-            .map(fe_delivery_system::from_repr)
-            .collect::<Option<_>>()
-            .context("Invalid")?;
+        self.delivery_system_list = enum_delsys;
 
         // dev-file metadata
 
@@ -218,19 +209,19 @@ impl FeDevice {
     fn check_properties(&self, cmdseq: &[DtvProperty]) -> Result<()> {
         for p in cmdseq {
             match p {
-                DTV_FREQUENCY(DtvPropertyData{data, ..}) => {
+                DTV_FREQUENCY(DtvPropertyRequest{data, ..}) => {
                     ensure!(
                         self.frequency_range.contains(&data),
                         "FE: frequency out of range"
                     );
                 }
-                DTV_SYMBOL_RATE(DtvPropertyData{data, ..})  => {
+                DTV_SYMBOL_RATE(DtvPropertyRequest{data, ..})  => {
                     ensure!(
                         self.symbolrate_range.contains(&data),
                         "FE: symbolrate out of range"
                     );
                 }
-                DTV_INVERSION(DtvPropertyData{data, ..})  => {
+                DTV_INVERSION(DtvPropertyRequest{data, ..})  => {
                     if *data == INVERSION_AUTO {
                         ensure!(
                             self.caps.contains(fe_caps::FE_CAN_INVERSION_AUTO),
@@ -238,7 +229,7 @@ impl FeDevice {
                         );
                     }
                 }
-                DTV_TRANSMISSION_MODE(DtvPropertyData{data, ..})  => {
+                DTV_TRANSMISSION_MODE(DtvPropertyRequest{data, ..})  => {
                     if *data == TRANSMISSION_MODE_AUTO {
                         ensure!(
                             self.caps.contains(fe_caps::FE_CAN_TRANSMISSION_MODE_AUTO),
@@ -246,7 +237,7 @@ impl FeDevice {
                         );
                     }
                 }
-                DTV_GUARD_INTERVAL(DtvPropertyData{data, ..})  => {
+                DTV_GUARD_INTERVAL(DtvPropertyRequest{data, ..})  => {
                     if *data == GUARD_INTERVAL_AUTO {
                         ensure!(
                             self.caps.contains(fe_caps::FE_CAN_GUARD_INTERVAL_AUTO),
@@ -254,7 +245,7 @@ impl FeDevice {
                         );
                     }
                 }
-                DTV_HIERARCHY(DtvPropertyData{data, ..})  => {
+                DTV_HIERARCHY(DtvPropertyRequest{data, ..})  => {
                     if *data == HIERARCHY_AUTO {
                         ensure!(
                             self.caps.contains(fe_caps::FE_CAN_HIERARCHY_AUTO),

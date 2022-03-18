@@ -243,21 +243,17 @@ impl FeStatus {
             DTV_STAT_CNR,
             DTV_STAT_PRE_ERROR_BIT_COUNT,
             DTV_STAT_ERROR_BLOCK_COUNT
-        );
-        self.delivery_system = delivery_system;
-        self.modulation = modulation;
-        if let Some(v) = snr {
-            self.normalize_snr(v);
-        }
-        if let Some(v) = signal_strength {
-            self.normalize_signal_strength(v);
-        }
-        self.ber = match ber.and_then(|v| v.get_counter()) {
+        )?;
+        self.delivery_system = Some(delivery_system);
+        self.modulation = Some(modulation);
+        self.normalize_signal_strength(signal_strength);
+        self.normalize_snr(snr);
+        self.ber = match ber.get_counter() {
             Some(v) => Some(v),
             None if self.status.contains(fe_status::FE_HAS_LOCK) => Some(fe.read_ber()?),
             None => None,
         };
-        self.unc = match unc.and_then(|v| v.get_counter()) {
+        self.unc = match unc.get_counter() {
             Some(v) => Some(v),
             None if self.status.contains(fe_status::FE_HAS_LOCK) => Some(fe.read_unc()?),
             None => None,
