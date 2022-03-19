@@ -1,5 +1,5 @@
-use anyhow::{Context};
-use std::{fmt, mem, iter::{FromIterator}};
+use anyhow::Context;
+use std::{fmt, iter::FromIterator, mem};
 
 pub use {
     fe_code_rate::*, fe_delivery_system::*, fe_guard_interval::*, fe_hierarchy::*,
@@ -593,8 +593,8 @@ impl<T, const N: usize> DtvPropertyRequest<T, N> {
         Self {
             __reserved: [0; 3],
             data,
-            padding: [0; N], 
-            result: 0
+            padding: [0; N],
+            result: 0,
         }
     }
 }
@@ -610,12 +610,12 @@ pub type DtvPropertyRequestVoid = DtvPropertyRequest<(), DATA_SIZE>;
 
 impl WrappedResult<()> for DtvPropertyRequestVoid {
     #[inline]
-    fn get(&self) ->anyhow::Result<()> {
+    fn get(&self) -> anyhow::Result<()> {
         Ok(())
     }
 }
 
-pub type DtvPropertyRequestInt<T> = DtvPropertyRequest<T, {DATA_SIZE-4}>;
+pub type DtvPropertyRequestInt<T> = DtvPropertyRequest<T, { DATA_SIZE - 4 }>;
 
 impl<T: Copy> WrappedResult<T> for DtvPropertyRequestInt<T> {
     #[inline]
@@ -624,7 +624,7 @@ impl<T: Copy> WrappedResult<T> for DtvPropertyRequestInt<T> {
     }
 }
 
-pub type DtvPropertyRequestFrontendStats = DtvPropertyRequest<DtvFrontendStats, {DATA_SIZE-37}>;
+pub type DtvPropertyRequestFrontendStats = DtvPropertyRequest<DtvFrontendStats, { DATA_SIZE - 37 }>;
 
 impl WrappedResult<DtvFrontendStats> for DtvPropertyRequestFrontendStats {
     #[inline]
@@ -633,7 +633,8 @@ impl WrappedResult<DtvFrontendStats> for DtvPropertyRequestFrontendStats {
     }
 }
 
-pub type DtvPropertyRequestDeliverySystems = DtvPropertyRequest<DtvPropertyBuffer, {DATA_SIZE-4-32}>;
+pub type DtvPropertyRequestDeliverySystems =
+    DtvPropertyRequest<DtvPropertyBuffer, { DATA_SIZE - 4 - 32 }>;
 
 impl<T: FromIterator<fe_delivery_system>> WrappedResult<T> for DtvPropertyRequestDeliverySystems {
     #[inline]
@@ -645,7 +646,6 @@ impl<T: FromIterator<fe_delivery_system>> WrappedResult<T> for DtvPropertyReques
             .try_collect()
     }
 }
-
 
 #[repr(C, packed)]
 pub struct DtvPropertyNotImplementedLinux {

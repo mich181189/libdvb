@@ -80,7 +80,9 @@ impl fmt::Display for FeStatus {
             write!(
                 f,
                 "LOCK {}",
-                self.get_delivery_system().as_ref().unwrap_or(&fe_delivery_system::SYS_UNDEFINED)
+                self.get_delivery_system()
+                    .as_ref()
+                    .unwrap_or(&fe_delivery_system::SYS_UNDEFINED)
             )?;
         } else {
             write!(f, "NO-LOCK 0x{:02X}", self.status)?;
