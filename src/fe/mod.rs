@@ -1,5 +1,3 @@
-use crate::{dtv_property, req_dtv_properties};
-
 mod status;
 pub mod sys;
 
@@ -96,15 +94,91 @@ impl AsRawFd for FeDevice {
 }
 
 
+#[macro_export]
+macro_rules! get_dtv_properties {
+    ( $device:expr, $( $property:ident ),+ ) => { (|| -> anyhow::Result<_> {
+        let mut input = [ $( $property(DtvPropertyRequest::default()), )* ];
+        $device.get_properties(&mut input)?;
+        let mut iterator = input.iter();
+        Ok((
+            $(
+                match iterator.next() {
+                    Some($property(d)) => d.get(),
+                    _ => ::anyhow::Result::Err(anyhow!("Error unpacking")),
+                }?,
+            )*
+        ))
+    })()}
+}
+
+#[macro_export]
+macro_rules! set_dtv_properties {
+    ( $device:expr, $( $property:ident($data:expr) ),+ ) => {
+        $device.set_properties(&[
+            $( set_dtv_properties!(inner $device, $property, $data), )*
+        ])
+    };
+    ( inner $device:expr, DTV_FREQUENCY, $data:expr ) => {
+        if !$device.frequency_range.contains($data) {
+            bail!("FE: frequency out of range");
+        } else {
+            DTV_FREQUENCY(DtvPropertyRequest::new($data:expr))
+        }
+    };
+    ( inner $device:expr, DTV_SYMBOL_RATE, $data:expr ) => {
+        if !$device.symbolrate_range.contains($data) {
+            bail!("FE: symbolrate out of range");
+        } else {
+            DTV_SYMBOL_RATE(DtvPropertyRequest::new($data:expr))
+        }
+    };
+    ( inner $device:expr, DTV_INVERSION, $data:expr ) => {
+        if $data == INVERSION_AUTO && !$device.caps.contains(fe_caps::FE_CAN_INVERSION_AUTO) {
+            bail!("FE: auto inversion is not available");
+        } else {
+            DTV_INVERSION(DtvPropertyRequest::new($data:expr))
+        }
+    };
+    ( inner $device:expr, DTV_TRANSMISSION_MODE, $data:expr ) => {
+        if $data == TRANSMISSION_MODE_AUTO && !$device.caps.contains(fe_caps::FE_CAN_TRANSMISSION_MODE_AUTO) {
+            bail!("FE: no auto transmission mode");
+        } else {
+            DTV_TRANSMISSION_MODE(DtvPropertyRequest::new($data:expr))
+        }
+    };
+    ( inner $device:expr, DTV_GUARD_INTERVAL, $data:expr ) => {
+        if $data == GUARD_INTERVAL_AUTO && !$device.caps.contains(fe_caps::FE_CAN_GUARD_INTERVAL_AUTO) {
+            bail!("FE: no auto guard interval");
+        }
+    };
+    ( inner $device:expr, DTV_HIERARCHY, $data:expr ) => {
+        if $data == HIERARCHY_AUTO && !$device.caps.contains(fe_caps::FE_CAN_HIERARCHY_AUTO) {
+            bail!("FE: no auto hierarchy");
+        } else {
+            DTV_HIERARCHY(DtvPropertyRequest::new($data:expr))
+        }
+    };
+    ( inner $device:expr, DTV_STREAM_ID, $data:expr ) => {
+        if !$device.caps.contains(fe_caps::FE_CAN_MULTISTREAM) {
+            bail!("FE: no multistream");
+        } else {
+            DTV_STREAM_ID(DtvPropertyRequest::new($data:expr))
+        }
+    };
+    ( inner $device:expr, $property:ident, $data:expr ) => {
+        $property(DtvPropertyRequest::new($data))
+    }
+}
+
 impl FeDevice {
     /// Clears frontend settings and event queue
     pub fn clear(&self) -> Result<()> {
-        let cmdseq = [
-            dtv_property!(DTV_VOLTAGE, SEC_VOLTAGE_OFF),
-            dtv_property!(DTV_TONE, SEC_TONE_OFF),
-            dtv_property!(DTV_CLEAR, 0),
-        ];
-        self.set_properties(&cmdseq).context("FE: clear")?;
+        set_dtv_properties!(
+            self,
+            DTV_VOLTAGE(SEC_VOLTAGE_OFF),
+            DTV_TONE(SEC_TONE_OFF),
+            DTV_CLEAR(())
+        ).context("FE: clear")?;
 
         let mut event = FeEvent::default();
 
@@ -139,7 +213,7 @@ impl FeDevice {
         self.caps = feinfo.caps;
 
         // DVB v5 properties
-        let (api_version, enum_delsys) = req_dtv_properties!(
+        let (api_version, enum_delsys) = get_dtv_properties!(
             self,
             DTV_API_VERSION,
             DTV_ENUM_DELSYS
@@ -206,70 +280,8 @@ impl FeDevice {
         Self::open(adapter, device, true)
     }
 
-    fn check_properties(&self, cmdseq: &[DtvProperty]) -> Result<()> {
-        for p in cmdseq {
-            match p {
-                DTV_FREQUENCY(DtvPropertyRequest{data, ..}) => {
-                    ensure!(
-                        self.frequency_range.contains(&data),
-                        "FE: frequency out of range"
-                    );
-                }
-                DTV_SYMBOL_RATE(DtvPropertyRequest{data, ..})  => {
-                    ensure!(
-                        self.symbolrate_range.contains(&data),
-                        "FE: symbolrate out of range"
-                    );
-                }
-                DTV_INVERSION(DtvPropertyRequest{data, ..})  => {
-                    if *data == INVERSION_AUTO {
-                        ensure!(
-                            self.caps.contains(fe_caps::FE_CAN_INVERSION_AUTO),
-                            "FE: auto inversion is not available"
-                        );
-                    }
-                }
-                DTV_TRANSMISSION_MODE(DtvPropertyRequest{data, ..})  => {
-                    if *data == TRANSMISSION_MODE_AUTO {
-                        ensure!(
-                            self.caps.contains(fe_caps::FE_CAN_TRANSMISSION_MODE_AUTO),
-                            "FE: no auto transmission mode"
-                        );
-                    }
-                }
-                DTV_GUARD_INTERVAL(DtvPropertyRequest{data, ..})  => {
-                    if *data == GUARD_INTERVAL_AUTO {
-                        ensure!(
-                            self.caps.contains(fe_caps::FE_CAN_GUARD_INTERVAL_AUTO),
-                            "FE: no auto guard interval"
-                        );
-                    }
-                }
-                DTV_HIERARCHY(DtvPropertyRequest{data, ..})  => {
-                    if *data == HIERARCHY_AUTO {
-                        ensure!(
-                            self.caps.contains(fe_caps::FE_CAN_HIERARCHY_AUTO),
-                            "FE: no auto hierarchy"
-                        );
-                    }
-                }
-                DTV_STREAM_ID(..)  => {
-                    ensure!(
-                        self.caps.contains(fe_caps::FE_CAN_MULTISTREAM),
-                        "FE: no multistream"
-                    );
-                }
-                _ => {}
-            }
-        }
-
-        Ok(())
-    }
-
     /// Sets properties on frontend device
     pub fn set_properties(&self, cmdseq: &[DtvProperty]) -> Result<()> {
-        self.check_properties(cmdseq).context("FE: property check")?;
-
         #[repr(C)]
         pub struct DtvProperties {
             num: u32,

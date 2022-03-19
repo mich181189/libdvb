@@ -22,22 +22,21 @@ TODO:
 Example DVB-S2 tune:
 
 ```rust
-let cmdseq = vec![
-    dtv_property!(DTV_DELIVERY_SYSTEM, SYS_DVBS2),
-    dtv_property!(DTV_FREQUENCY, (11044 - 9750) * 1000),
-    dtv_property!(DTV_MODULATION, PSK_8),
-    dtv_property!(DTV_VOLTAGE, SEC_VOLTAGE_13),
-    dtv_property!(DTV_TONE, SEC_TONE_OFF),
-    dtv_property!(DTV_INVERSION, INVERSION_AUTO),
-    dtv_property!(DTV_SYMBOL_RATE, 27500 * 1000),
-    dtv_property!(DTV_INNER_FEC, FEC_AUTO),
-    dtv_property!(DTV_PILOT, PILOT_AUTO),
-    dtv_property!(DTV_ROLLOFF, ROLLOFF_35),
-    dtv_property!(DTV_TUNE, 0),
-];
-
 let fe = FeDevice::open_rw(0, 0)?;
-fe.set_properties(&cmdseq)?;
+set_dtv_properties!(
+    fe, 
+    DTV_DELIVERY_SYSTEM(SYS_DVBS2),
+    DTV_FREQUENCY((11044 - 9750) * 1000),
+    DTV_MODULATION(PSK_8),
+    DTV_VOLTAGE(SEC_VOLTAGE_13),
+    DTV_TONE(SEC_TONE_OFF),
+    DTV_INVERSION(INVERSION_AUTO),
+    DTV_SYMBOL_RATE(27500 * 1000),
+    DTV_INNER_FEC(FEC_AUTO),
+    DTV_PILOT(PILOT_AUTO),
+    DTV_ROLLOFF(ROLLOFF_35),
+    DTV_TUNE(()),
+)?;
 ```
 
 Frontend information:

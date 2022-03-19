@@ -1,4 +1,4 @@
-use crate::req_dtv_properties;
+use crate::get_dtv_properties;
 
 use {
     super::{sys::*, FeDevice},
@@ -235,7 +235,7 @@ impl FeStatus {
             return Ok(());
         }
 
-        let (delivery_system, modulation, signal_strength, snr, ber, unc) = req_dtv_properties!(
+        let (delivery_system, modulation, signal_strength, snr, ber, unc) = get_dtv_properties!(
             fe,
             DTV_DELIVERY_SYSTEM,
             DTV_MODULATION,

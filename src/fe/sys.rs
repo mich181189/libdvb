@@ -240,7 +240,7 @@ bitflags! {
 /// Spectral band inversion
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
+#[derive(Debug, PartialEq, Eq, FromRepr, Clone, Copy)]
 pub enum fe_spectral_inversion {
     INVERSION_OFF = 0,
     INVERSION_ON = 1,
@@ -249,7 +249,7 @@ pub enum fe_spectral_inversion {
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr)]
+#[derive(Debug, PartialEq, Eq, FromRepr, Clone, Copy)]
 pub enum fe_code_rate {
     FEC_NONE = 0,
     FEC_1_2 = 1,
@@ -562,8 +562,6 @@ impl DtvStatType for DtvFrontendStats {
 pub struct DtvPropertyBuffer {
     data: [u8; 32],
     len: u32,
-    __reserved_1: [u32; 3],
-    __reserved_2: *mut std::ffi::c_void,
 }
 
 impl WrappedSlice<u8> for DtvPropertyBuffer {
@@ -579,42 +577,63 @@ impl fmt::Debug for DtvPropertyBuffer {
     }
 }
 
+const DATA_SIZE: usize = 56;
+
 #[repr(C, packed)]
-#[derive(Debug)]
-pub struct DtvPropertyRequest<T> {
+pub struct DtvPropertyRequest<T, const N: usize> {
     __reserved: [u32; 3],
     data: T,
+    padding: [u8; N],
     result: i32, // Unused
 }
 
-impl<T> DtvPropertyRequest<T> {
+impl<T, const N: usize> DtvPropertyRequest<T, N> {
     #[inline]
     pub fn new(data: T) -> Self {
         Self {
-            __reserved: [0, 0, 0],
+            __reserved: [0; 3],
             data,
-            result: 0,
+            padding: [0; N], 
+            result: 0
         }
     }
 }
 
-impl<T> Default for DtvPropertyRequest<T> {
+impl<T, const N: usize> Default for DtvPropertyRequest<T, N> {
     #[inline]
     fn default() -> Self {
         unsafe { mem::zeroed::<Self>() }
     }
 }
 
-impl<T: Copy> WrappedResult<T> for DtvPropertyRequest<T> {
+pub type DtvPropertyRequestVoid = DtvPropertyRequest<(), DATA_SIZE>;
+
+impl WrappedResult<()> for DtvPropertyRequestVoid {
+    #[inline]
+    fn get(&self) ->anyhow::Result<()> {
+        Ok(())
+    }
+}
+
+pub type DtvPropertyRequestInt<T> = DtvPropertyRequest<T, {DATA_SIZE-4}>;
+
+impl<T: Copy> WrappedResult<T> for DtvPropertyRequestInt<T> {
     #[inline]
     fn get(&self) -> anyhow::Result<T> {
         Ok(self.data)
     }
 }
 
-pub type DtvPropertyRequestVoid = DtvPropertyRequest<u32>;
+pub type DtvPropertyRequestFrontendStats = DtvPropertyRequest<DtvFrontendStats, {DATA_SIZE-37}>;
 
-pub type DtvPropertyRequestDeliverySystems = DtvPropertyRequest<DtvPropertyBuffer>;
+impl WrappedResult<DtvFrontendStats> for DtvPropertyRequestFrontendStats {
+    #[inline]
+    fn get(&self) -> anyhow::Result<DtvFrontendStats> {
+        Ok(self.data)
+    }
+}
+
+pub type DtvPropertyRequestDeliverySystems = DtvPropertyRequest<DtvPropertyBuffer, {DATA_SIZE-4-32}>;
 
 impl<T: FromIterator<fe_delivery_system>> WrappedResult<T> for DtvPropertyRequestDeliverySystems {
     #[inline]
@@ -627,8 +646,8 @@ impl<T: FromIterator<fe_delivery_system>> WrappedResult<T> for DtvPropertyReques
     }
 }
 
+
 #[repr(C, packed)]
-#[derive(Debug)]
 pub struct DtvPropertyNotImplementedLinux {
     __reserved: [u32; 6],
 }
@@ -643,78 +662,77 @@ type DtvPropertyDeprecated = DtvPropertyNotImplementedLinux;
 /// DVBv5 property Commands
 #[repr(u32, C)]
 #[allow(non_camel_case_types)]
-#[derive(Debug)]
 #[allow(deprecated)]
 pub enum DtvProperty {
     DTV_UNDEFINED(DtvPropertyNotImplementedLinux),
     DTV_TUNE(DtvPropertyRequestVoid),
     DTV_CLEAR(DtvPropertyRequestVoid),
-    DTV_FREQUENCY(DtvPropertyRequest<u32>),
-    DTV_MODULATION(DtvPropertyRequest<fe_modulation>),
-    DTV_BANDWIDTH_HZ(DtvPropertyRequest<u32>),
-    DTV_INVERSION(DtvPropertyRequest<fe_spectral_inversion>),
+    DTV_FREQUENCY(DtvPropertyRequestInt<u32>),
+    DTV_MODULATION(DtvPropertyRequestInt<fe_modulation>),
+    DTV_BANDWIDTH_HZ(DtvPropertyRequestInt<u32>),
+    DTV_INVERSION(DtvPropertyRequestInt<fe_spectral_inversion>),
     DTV_DISEQC_MASTER(DtvPropertyNotImplementedLinux),
-    DTV_SYMBOL_RATE(DtvPropertyRequest<u32>),
-    DTV_INNER_FEC(DtvPropertyRequest<fe_code_rate>),
-    DTV_VOLTAGE(DtvPropertyRequest<fe_sec_voltage>),
-    DTV_TONE(DtvPropertyRequest<fe_sec_tone_mode>),
-    DTV_PILOT(DtvPropertyRequest<fe_pilot>),
-    DTV_ROLLOFF(DtvPropertyRequest<fe_rolloff>),
+    DTV_SYMBOL_RATE(DtvPropertyRequestInt<u32>),
+    DTV_INNER_FEC(DtvPropertyRequestInt<fe_code_rate>),
+    DTV_VOLTAGE(DtvPropertyRequestInt<fe_sec_voltage>),
+    DTV_TONE(DtvPropertyRequestInt<fe_sec_tone_mode>),
+    DTV_PILOT(DtvPropertyRequestInt<fe_pilot>),
+    DTV_ROLLOFF(DtvPropertyRequestInt<fe_rolloff>),
     DTV_DISEQC_SLAVE_REPLY(DtvPropertyNotImplementedLinux),
 
     /* Basic enumeration set for querying unlimited capabilities */
     DTV_FE_CAPABILITY_COUNT(DtvPropertyNotImplementedLinux),
     DTV_FE_CAPABILITY(DtvPropertyNotImplementedLinux),
-    DTV_DELIVERY_SYSTEM(DtvPropertyRequest<fe_delivery_system>),
+    DTV_DELIVERY_SYSTEM(DtvPropertyRequestInt<fe_delivery_system>),
 
     /* ISDB-T and ISDB-Tsb */
     // Please fork
-    DTV_ISDBT_PARTIAL_RECEPTION(DtvPropertyRequest<i32>),
-    DTV_ISDBT_SOUND_BROADCASTING(DtvPropertyRequest<i32>),
+    DTV_ISDBT_PARTIAL_RECEPTION(DtvPropertyRequestInt<i32>),
+    DTV_ISDBT_SOUND_BROADCASTING(DtvPropertyRequestInt<i32>),
 
-    DTV_ISDBT_SB_SUBCHANNEL_ID(DtvPropertyRequest<i32>),
-    DTV_ISDBT_SB_SEGMENT_IDX(DtvPropertyRequest<i32>),
-    DTV_ISDBT_SB_SEGMENT_COUNT(DtvPropertyRequest<u32>),
+    DTV_ISDBT_SB_SUBCHANNEL_ID(DtvPropertyRequestInt<i32>),
+    DTV_ISDBT_SB_SEGMENT_IDX(DtvPropertyRequestInt<i32>),
+    DTV_ISDBT_SB_SEGMENT_COUNT(DtvPropertyRequestInt<u32>),
 
-    DTV_ISDBT_LAYERA_FEC(DtvPropertyRequest<fe_code_rate>),
-    DTV_ISDBT_LAYERA_MODULATION(DtvPropertyRequest<fe_modulation>),
-    DTV_ISDBT_LAYERA_SEGMENT_COUNT(DtvPropertyRequest<i32>),
-    DTV_ISDBT_LAYERA_TIME_INTERLEAVING(DtvPropertyRequest<i32>),
+    DTV_ISDBT_LAYERA_FEC(DtvPropertyRequestInt<fe_code_rate>),
+    DTV_ISDBT_LAYERA_MODULATION(DtvPropertyRequestInt<fe_modulation>),
+    DTV_ISDBT_LAYERA_SEGMENT_COUNT(DtvPropertyRequestInt<i32>),
+    DTV_ISDBT_LAYERA_TIME_INTERLEAVING(DtvPropertyRequestInt<i32>),
 
-    DTV_ISDBT_LAYERB_FEC(DtvPropertyRequest<fe_code_rate>),
-    DTV_ISDBT_LAYERB_MODULATION(DtvPropertyRequest<fe_modulation>),
-    DTV_ISDBT_LAYERB_SEGMENT_COUNT(DtvPropertyRequest<i32>),
-    DTV_ISDBT_LAYERB_TIME_INTERLEAVING(DtvPropertyRequest<i32>),
+    DTV_ISDBT_LAYERB_FEC(DtvPropertyRequestInt<fe_code_rate>),
+    DTV_ISDBT_LAYERB_MODULATION(DtvPropertyRequestInt<fe_modulation>),
+    DTV_ISDBT_LAYERB_SEGMENT_COUNT(DtvPropertyRequestInt<i32>),
+    DTV_ISDBT_LAYERB_TIME_INTERLEAVING(DtvPropertyRequestInt<i32>),
 
-    DTV_ISDBT_LAYERC_FEC(DtvPropertyRequest<fe_code_rate>),
-    DTV_ISDBT_LAYERC_MODULATION(DtvPropertyRequest<fe_modulation>),
-    DTV_ISDBT_LAYERC_SEGMENT_COUNT(DtvPropertyRequest<i32>),
-    DTV_ISDBT_LAYERC_TIME_INTERLEAVING(DtvPropertyRequest<i32>),
+    DTV_ISDBT_LAYERC_FEC(DtvPropertyRequestInt<fe_code_rate>),
+    DTV_ISDBT_LAYERC_MODULATION(DtvPropertyRequestInt<fe_modulation>),
+    DTV_ISDBT_LAYERC_SEGMENT_COUNT(DtvPropertyRequestInt<i32>),
+    DTV_ISDBT_LAYERC_TIME_INTERLEAVING(DtvPropertyRequestInt<i32>),
 
-    DTV_API_VERSION(DtvPropertyRequest<u32>),
+    DTV_API_VERSION(DtvPropertyRequestInt<u32>),
 
     /* DVB-T/T2 */
-    DTV_CODE_RATE_HP(DtvPropertyRequest<fe_transmit_mode>),
-    DTV_CODE_RATE_LP(DtvPropertyRequest<fe_transmit_mode>),
-    DTV_GUARD_INTERVAL(DtvPropertyRequest<fe_guard_interval>),
-    DTV_TRANSMISSION_MODE(DtvPropertyRequest<fe_transmit_mode>),
-    DTV_HIERARCHY(DtvPropertyRequest<fe_hierarchy>),
+    DTV_CODE_RATE_HP(DtvPropertyRequestInt<fe_transmit_mode>),
+    DTV_CODE_RATE_LP(DtvPropertyRequestInt<fe_transmit_mode>),
+    DTV_GUARD_INTERVAL(DtvPropertyRequestInt<fe_guard_interval>),
+    DTV_TRANSMISSION_MODE(DtvPropertyRequestInt<fe_transmit_mode>),
+    DTV_HIERARCHY(DtvPropertyRequestInt<fe_hierarchy>),
 
-    DTV_ISDBT_LAYER_ENABLED(DtvPropertyRequest<u32>),
+    DTV_ISDBT_LAYER_ENABLED(DtvPropertyRequestInt<u32>),
 
-    DTV_STREAM_ID(DtvPropertyRequest<u32>),
+    DTV_STREAM_ID(DtvPropertyRequestInt<u32>),
     #[deprecated(note = "Obsolete, replaced with DTV_STREAM_ID.")]
     DTV_DVBT2_PLP_ID_LEGACY(DtvPropertyDeprecated),
 
     DTV_ENUM_DELSYS(DtvPropertyRequestDeliverySystems),
 
     /* ATSC-MH */
-    DTV_ATSCMH_FIC_VER(DtvPropertyRequest<u32>),
-    DTV_ATSCMH_PARADE_ID(DtvPropertyRequest<u32>),
-    DTV_ATSCMH_NOG(DtvPropertyRequest<u32>),
-    DTV_ATSCMH_TNOG(DtvPropertyRequest<u32>),
-    DTV_ATSCMH_SGN(DtvPropertyRequest<u32>),
-    DTV_ATSCMH_PRC(DtvPropertyRequest<u32>),
+    DTV_ATSCMH_FIC_VER(DtvPropertyRequestInt<u32>),
+    DTV_ATSCMH_PARADE_ID(DtvPropertyRequestInt<u32>),
+    DTV_ATSCMH_NOG(DtvPropertyRequestInt<u32>),
+    DTV_ATSCMH_TNOG(DtvPropertyRequestInt<u32>),
+    DTV_ATSCMH_SGN(DtvPropertyRequestInt<u32>),
+    DTV_ATSCMH_PRC(DtvPropertyRequestInt<u32>),
     DTV_ATSCMH_RS_FRAME_MODE(DtvPropertyNotImplemented),
     DTV_ATSCMH_RS_FRAME_ENSEMBLE(DtvPropertyNotImplemented),
     DTV_ATSCMH_RS_CODE_MODE_PRI(DtvPropertyNotImplemented),
@@ -725,51 +743,21 @@ pub enum DtvProperty {
     DTV_ATSCMH_SCCC_CODE_MODE_C(DtvPropertyNotImplemented),
     DTV_ATSCMH_SCCC_CODE_MODE_D(DtvPropertyNotImplemented),
 
-    DTV_INTERLEAVING(DtvPropertyRequest<fe_interleaving>),
-    DTV_LNA(DtvPropertyRequest<fe_lna>),
+    DTV_INTERLEAVING(DtvPropertyRequestInt<fe_interleaving>),
+    DTV_LNA(DtvPropertyRequestInt<fe_lna>),
 
     /* Quality parameters */
-    DTV_STAT_SIGNAL_STRENGTH(DtvPropertyRequest<DtvFrontendStats>),
-    DTV_STAT_CNR(DtvPropertyRequest<DtvFrontendStats>),
-    DTV_STAT_PRE_ERROR_BIT_COUNT(DtvPropertyRequest<DtvFrontendStats>),
-    DTV_STAT_PRE_TOTAL_BIT_COUNT(DtvPropertyRequest<DtvFrontendStats>),
-    DTV_STAT_POST_ERROR_BIT_COUNT(DtvPropertyRequest<DtvFrontendStats>),
-    DTV_STAT_POST_TOTAL_BIT_COUNT(DtvPropertyRequest<DtvFrontendStats>),
-    DTV_STAT_ERROR_BLOCK_COUNT(DtvPropertyRequest<DtvFrontendStats>),
-    DTV_STAT_TOTAL_BLOCK_COUNT(DtvPropertyRequest<DtvFrontendStats>),
+    DTV_STAT_SIGNAL_STRENGTH(DtvPropertyRequestFrontendStats),
+    DTV_STAT_CNR(DtvPropertyRequestFrontendStats),
+    DTV_STAT_PRE_ERROR_BIT_COUNT(DtvPropertyRequestFrontendStats),
+    DTV_STAT_PRE_TOTAL_BIT_COUNT(DtvPropertyRequestFrontendStats),
+    DTV_STAT_POST_ERROR_BIT_COUNT(DtvPropertyRequestFrontendStats),
+    DTV_STAT_POST_TOTAL_BIT_COUNT(DtvPropertyRequestFrontendStats),
+    DTV_STAT_ERROR_BLOCK_COUNT(DtvPropertyRequestFrontendStats),
+    DTV_STAT_TOTAL_BLOCK_COUNT(DtvPropertyRequestFrontendStats),
 
     /* Physical layer scrambling */
-    DTV_SCRAMBLING_SEQUENCE_INDEX(DtvPropertyRequest<u32>),
-}
-
-#[macro_export]
-macro_rules! dtv_property {
-    ( $property:ident, $data:expr ) => {
-        $property(DtvPropertyRequest::new($data))
-    };
-    ( $property:ident($data:expr) ) => {
-        $property(DtvPropertyRequest::new($data))
-    };
-    ( $property:expr ) => {
-        $property
-    };
-}
-
-#[macro_export]
-macro_rules! req_dtv_properties {
-    ( $device:expr, $( $property:ident ),+ ) => { (|| -> anyhow::Result<_> {
-        let mut input = [ $( $property(DtvPropertyRequest::default()), )* ];
-        $device.get_properties(&mut input)?;
-        let mut iterator = input.iter();
-        Ok((
-            $(
-                match iterator.next() {
-                    Some($property(d)) => d.get(),
-                    _ => ::anyhow::Result::Err(anyhow!("Error unpacking")),
-                }?,
-            )*
-        ))
-    })()}
+    DTV_SCRAMBLING_SEQUENCE_INDEX(DtvPropertyRequestInt<u32>),
 }
 
 /// num of properties cannot exceed DTV_IOCTL_MAX_MSGS per ioctl
