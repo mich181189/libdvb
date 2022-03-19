@@ -1,8 +1,8 @@
 [package]
 name = "libdvb"
-version = "0.3.0"
-description = "Interface for DVB-API v5 devices in Linux"
-authors = ["Cesbo Developers Team <info@cesbo.com>"]
+version = "0.4.0"
+description = "Safe interface for DVB-API v5 devices in Linux"
+authors = ["Cesbo Developers Team <info@cesbo.com>", "Daniil Gentili <daniil@daniil.it>"]
 license = "MIT"
 readme = "README.md"
 documentation = "https://docs.rs/libdvb"
