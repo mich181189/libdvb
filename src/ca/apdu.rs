@@ -4,7 +4,7 @@
 //! All protocols in the Application Layer use a common Application
 //! Protocol Data Unit (APDU) structure to send application data between
 //! module and host or between modules.
-
+#![allow(dead_code)]
 use {super::CaDevice, anyhow::Result};
 
 pub const APDU_TAG_SIZE: usize = 3;

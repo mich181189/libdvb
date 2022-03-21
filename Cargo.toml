@@ -1,6 +1,6 @@
 [package]
 name = "libdvb-rs"
-version = "0.4.0"
+version = "0.4.1"
 description = "Safer pure-Rust interface for DVB-API v5 devices in Linux"
 authors = ["Cesbo Developers Team <info@cesbo.com>", "Daniil Gentili <daniil@daniil.it>"]
 license = "MIT"
@@ -16,5 +16,4 @@ nix = "0.19"
 anyhow = "1.0"
 strum = { version = "0.23", features = ["derive"] }
 bitflags = "1.3.2"
-derive_more = "0.99.0"
 itertools = "0.10.2"

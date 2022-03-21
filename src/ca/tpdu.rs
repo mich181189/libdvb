@@ -9,6 +9,7 @@
 //! Transport Protocol Data Unit (R_TPDU).
 //! The module cannot initiate communication: it must wait for the host to
 //! poll it or send it data first.
+#![allow(dead_code)]
 
 use {
     super::{asn1, spdu, CaDevice},

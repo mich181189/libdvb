@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 mod apdu;
 mod asn1;
 mod spdu;

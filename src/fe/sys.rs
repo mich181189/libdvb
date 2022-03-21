@@ -1,5 +1,7 @@
 use anyhow::Context;
-use std::{fmt, iter::FromIterator, mem};
+use std::fmt::Debug;
+use std::str::FromStr;
+use std::{fmt, mem};
 
 pub use {
     fe_code_rate::*, fe_delivery_system::*, fe_guard_interval::*, fe_hierarchy::*,
@@ -182,7 +184,7 @@ impl Default for DiseqcSlaveReply {
 /// DC Voltage used to feed the LNBf
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, FromRepr)]
+#[derive(EnumString, Debug, Copy, Clone, PartialEq, Eq, FromRepr)]
 pub enum fe_sec_voltage {
     /// Output 13V to the LNB. Vertical linear. Right circular.
     SEC_VOLTAGE_13 = 0,
@@ -194,7 +196,7 @@ pub enum fe_sec_voltage {
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, FromRepr)]
+#[derive(EnumString, Debug, Copy, Clone, PartialEq, Eq, FromRepr)]
 pub enum fe_sec_tone_mode {
     /// Sends a 22kHz tone burst to the antenna
     SEC_TONE_ON = 0,
@@ -240,114 +242,178 @@ bitflags! {
 /// Spectral band inversion
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr, Clone, Copy)]
+#[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Clone, Copy)]
 pub enum fe_spectral_inversion {
+    #[strum(serialize = "OFF")]
     INVERSION_OFF = 0,
+    #[strum(serialize = "ON")]
     INVERSION_ON = 1,
+    #[strum(serialize = "AUTO")]
     INVERSION_AUTO = 2,
 }
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr, Clone, Copy)]
+#[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Clone, Copy)]
+#[strum(ascii_case_insensitive)]
 pub enum fe_code_rate {
+    #[strum(serialize = "NONE")]
     FEC_NONE = 0,
+    #[strum(serialize = "1/2")]
     FEC_1_2 = 1,
+    #[strum(serialize = "2/3")]
     FEC_2_3 = 2,
+    #[strum(serialize = "3/4")]
     FEC_3_4 = 3,
+    #[strum(serialize = "4/5")]
     FEC_4_5 = 4,
+    #[strum(serialize = "5/6")]
     FEC_5_6 = 5,
+    #[strum(serialize = "6/7")]
     FEC_6_7 = 6,
+    #[strum(serialize = "7/8")]
     FEC_7_8 = 7,
+    #[strum(serialize = "8/9")]
     FEC_8_9 = 8,
+    #[strum(serialize = "AUTO")]
     FEC_AUTO = 9,
+    #[strum(serialize = "3/5")]
     FEC_3_5 = 10,
+    #[strum(serialize = "9/10")]
     FEC_9_10 = 11,
+    #[strum(serialize = "2/5")]
     FEC_2_5 = 12,
+    #[strum(serialize = "1/4")]
     FEC_1_4 = 13,
+    #[strum(serialize = "1/3")]
     FEC_1_3 = 14,
 }
 
 /// Type of modulation/constellation
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
+#[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_modulation {
     QPSK = 0,
+    #[strum(serialize = "QAM/16")]
     QAM_16 = 1,
+    #[strum(serialize = "QAM/32")]
     QAM_32 = 2,
+    #[strum(serialize = "QAM/64")]
     QAM_64 = 3,
+    #[strum(serialize = "QAM/128")]
     QAM_128 = 4,
+    #[strum(serialize = "QAM/256")]
     QAM_256 = 5,
+    #[strum(serialize = "QAM/AUTO")]
     QAM_AUTO = 6,
+    #[strum(serialize = "VSB/8")]
     VSB_8 = 7,
+    #[strum(serialize = "VSB/16")]
     VSB_16 = 8,
+    #[strum(serialize = "PSK/8")]
     PSK_8 = 9,
+    #[strum(serialize = "APSK/16")]
     APSK_16 = 10,
+    #[strum(serialize = "APSK/32")]
     APSK_32 = 11,
+    #[strum(serialize = "DQPSK")]
     DQPSK = 12,
+    #[strum(serialize = "QAM/4/NR")]
     QAM_4_NR = 13,
+    #[strum(serialize = "APSK/64")]
     APSK_64 = 14,
+    #[strum(serialize = "APSK/128")]
     APSK_128 = 15,
+    #[strum(serialize = "APSK/256")]
     APSK_256 = 16,
 }
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
+#[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_transmit_mode {
+    #[strum(serialize = "2K")]
     TRANSMISSION_MODE_2K = 0,
+    #[strum(serialize = "8K")]
     TRANSMISSION_MODE_8K = 1,
+    #[strum(serialize = "AUTO")]
     TRANSMISSION_MODE_AUTO = 2,
+    #[strum(serialize = "4K")]
     TRANSMISSION_MODE_4K = 3,
+    #[strum(serialize = "1K")]
     TRANSMISSION_MODE_1K = 4,
+    #[strum(serialize = "16K")]
     TRANSMISSION_MODE_16K = 5,
+    #[strum(serialize = "32K")]
     TRANSMISSION_MODE_32K = 6,
+    #[strum(serialize = "C1")]
     TRANSMISSION_MODE_C1 = 7,
+    #[strum(serialize = "C3780")]
     TRANSMISSION_MODE_C3780 = 8,
 }
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
+#[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_guard_interval {
+    #[strum(serialize = "1/32")]
     GUARD_INTERVAL_1_32 = 0,
+    #[strum(serialize = "1/16")]
     GUARD_INTERVAL_1_16 = 1,
+    #[strum(serialize = "1/8")]
     GUARD_INTERVAL_1_8 = 2,
+    #[strum(serialize = "1/4")]
     GUARD_INTERVAL_1_4 = 3,
+    #[strum(serialize = "AUTO")]
     GUARD_INTERVAL_AUTO = 4,
+    #[strum(serialize = "1/128")]
     GUARD_INTERVAL_1_128 = 5,
+    #[strum(serialize = "19/128")]
     GUARD_INTERVAL_19_128 = 6,
+    #[strum(serialize = "19/256")]
     GUARD_INTERVAL_19_256 = 7,
+    #[strum(serialize = "PN420")]
     GUARD_INTERVAL_PN420 = 8,
+    #[strum(serialize = "PN595")]
     GUARD_INTERVAL_PN595 = 9,
+    #[strum(serialize = "PN945")]
     GUARD_INTERVAL_PN945 = 10,
 }
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
+#[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_hierarchy {
+    #[strum(serialize = "NONE")]
     HIERARCHY_NONE = 0,
+    #[strum(serialize = "1")]
     HIERARCHY_1 = 1,
+    #[strum(serialize = "2")]
     HIERARCHY_2 = 2,
+    #[strum(serialize = "4")]
     HIERARCHY_4 = 3,
+    #[strum(serialize = "AUTO")]
     HIERARCHY_AUTO = 4,
 }
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
+#[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_interleaving {
+    #[strum(serialize = "NONE")]
     INTERLEAVING_NONE = 0,
+    #[strum(serialize = "AUTO")]
     INTERLEAVING_AUTO = 1,
+    #[strum(serialize = "240")]
     INTERLEAVING_240 = 2,
+    #[strum(serialize = "720")]
     INTERLEAVING_720 = 3,
 }
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
+#[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_pilot {
     PILOT_ON = 0,
     PILOT_OFF = 1,
@@ -356,7 +422,7 @@ pub enum fe_pilot {
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
+#[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_rolloff {
     ROLLOFF_35 = 0,
     ROLLOFF_20 = 1,
@@ -370,28 +436,29 @@ pub enum fe_rolloff {
 #[derive(EnumString, Display, FromRepr, Debug, Copy, Clone)]
 #[repr(u32)]
 #[allow(non_camel_case_types)]
+#[strum(ascii_case_insensitive)]
 pub enum fe_delivery_system {
     #[strum(to_string = "none")]
     SYS_UNDEFINED = 0,
-    #[strum(to_string = "dvb-c")]
+    #[strum(to_string = "dbvc/annex_a")]
     SYS_DVBC_ANNEX_A = 1,
-    #[strum(to_string = "dvb-c/b")]
+    #[strum(to_string = "dvbc/annex_b")]
     SYS_DVBC_ANNEX_B = 2,
-    #[strum(to_string = "dvb-t")]
+    #[strum(to_string = "dvbt")]
     SYS_DVBT = 3,
     #[strum(to_string = "dss")]
     SYS_DSS = 4,
-    #[strum(to_string = "dvb-s")]
+    #[strum(to_string = "dvbs")]
     SYS_DVBS = 5,
-    #[strum(to_string = "dvb-s2")]
+    #[strum(to_string = "dvbs2")]
     SYS_DVBS2 = 6,
-    #[strum(to_string = "dvb-h")]
+    #[strum(to_string = "dvbh")]
     SYS_DVBH = 7,
-    #[strum(to_string = "isdb-t")]
+    #[strum(to_string = "isdbt")]
     SYS_ISDBT = 8,
-    #[strum(to_string = "isdb-s")]
+    #[strum(to_string = "isdbs")]
     SYS_ISDBS = 9,
-    #[strum(to_string = "isdb-c")]
+    #[strum(to_string = "isdbc")]
     SYS_ISDBC = 10,
     #[strum(to_string = "atsc")]
     SYS_ATSC = 11,
@@ -403,19 +470,19 @@ pub enum fe_delivery_system {
     SYS_CMMB = 14,
     #[strum(to_string = "dab")]
     SYS_DAB = 15,
-    #[strum(to_string = "dvb-t2")]
+    #[strum(to_string = "dvbt2", serialize = "dvbt22")]
     SYS_DVBT2 = 16,
-    #[strum(to_string = "dvb-s/turbo")]
+    #[strum(to_string = "dvbs/turbo")]
     SYS_TURBO = 17,
-    #[strum(to_string = "dvb-c/c")]
+    #[strum(to_string = "dvbc/annex_c")]
     SYS_DVBC_ANNEX_C = 18,
-    #[strum(to_string = "dvb-c2")]
+    #[strum(to_string = "dvbc2")]
     SYS_DVBC2 = 19,
 }
 
 #[repr(u32)]
 #[allow(non_camel_case_types)]
-#[derive(Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
+#[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
 pub enum fe_lna {
     LNA_OFF = 0,
     LNA_ON = 1,
@@ -615,12 +682,24 @@ impl WrappedResult<()> for DtvPropertyRequestVoid {
     }
 }
 
+impl Debug for DtvPropertyRequestVoid {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("()")
+    }
+}
+
 pub type DtvPropertyRequestInt<T> = DtvPropertyRequest<T, { DATA_SIZE - 4 }>;
 
-impl<T: Copy> WrappedResult<T> for DtvPropertyRequestInt<T> {
+impl<T: Copy + Debug> WrappedResult<T> for DtvPropertyRequestInt<T> {
     #[inline]
     fn get(&self) -> anyhow::Result<T> {
         Ok(self.data)
+    }
+}
+
+impl<T: Copy + Debug> Debug for DtvPropertyRequestInt<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.get().fmt(f)
     }
 }
 
@@ -633,12 +712,18 @@ impl WrappedResult<DtvFrontendStats> for DtvPropertyRequestFrontendStats {
     }
 }
 
+impl Debug for DtvPropertyRequestFrontendStats {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.data.fmt(f)
+    }
+}
+
 pub type DtvPropertyRequestDeliverySystems =
     DtvPropertyRequest<DtvPropertyBuffer, { DATA_SIZE - 4 - 32 }>;
 
-impl<T: FromIterator<fe_delivery_system>> WrappedResult<T> for DtvPropertyRequestDeliverySystems {
+impl WrappedResult<Vec<fe_delivery_system>> for DtvPropertyRequestDeliverySystems {
     #[inline]
-    fn get(&self) -> Result<T, anyhow::Error> {
+    fn get(&self) -> Result<Vec<fe_delivery_system>, anyhow::Error> {
         self.data
             .slice()
             .into_iter()
@@ -647,9 +732,21 @@ impl<T: FromIterator<fe_delivery_system>> WrappedResult<T> for DtvPropertyReques
     }
 }
 
+impl Debug for DtvPropertyRequestDeliverySystems {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_list().entries(self.get().unwrap().iter()).finish()
+    }
+}
+
 #[repr(C, packed)]
 pub struct DtvPropertyNotImplementedLinux {
-    __reserved: [u32; 6],
+    __reserved: [u8; DATA_SIZE],
+}
+
+impl Debug for DtvPropertyNotImplementedLinux {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("Not implemented")
+    }
 }
 
 #[deprecated(
@@ -663,6 +760,7 @@ type DtvPropertyDeprecated = DtvPropertyNotImplementedLinux;
 #[repr(u32, C)]
 #[allow(non_camel_case_types)]
 #[allow(deprecated)]
+#[derive(Debug)]
 pub enum DtvProperty {
     DTV_UNDEFINED(DtvPropertyNotImplementedLinux),
     DTV_TUNE(DtvPropertyRequestVoid),
@@ -712,8 +810,8 @@ pub enum DtvProperty {
     DTV_API_VERSION(DtvPropertyRequestInt<u32>),
 
     /* DVB-T/T2 */
-    DTV_CODE_RATE_HP(DtvPropertyRequestInt<fe_transmit_mode>),
-    DTV_CODE_RATE_LP(DtvPropertyRequestInt<fe_transmit_mode>),
+    DTV_CODE_RATE_HP(DtvPropertyRequestInt<fe_code_rate>),
+    DTV_CODE_RATE_LP(DtvPropertyRequestInt<fe_code_rate>),
     DTV_GUARD_INTERVAL(DtvPropertyRequestInt<fe_guard_interval>),
     DTV_TRANSMISSION_MODE(DtvPropertyRequestInt<fe_transmit_mode>),
     DTV_HIERARCHY(DtvPropertyRequestInt<fe_hierarchy>),
@@ -758,6 +856,95 @@ pub enum DtvProperty {
 
     /* Physical layer scrambling */
     DTV_SCRAMBLING_SEQUENCE_INDEX(DtvPropertyRequestInt<u32>),
+}
+
+#[macro_export]
+macro_rules! dtv_property {
+    ( $property:ident($data:expr) ) => {
+        $property(DtvPropertyRequest::new($data))
+    };
+}
+
+#[macro_export]
+macro_rules! dtv_property_parse {
+    ( $property:ident($data:expr)) => {
+        $property(DtvPropertyRequest::new($data.parse().context(format!("Invalid {}: {}", stringify!($property), $data))?))
+    };
+}
+
+impl FromStr for DtvProperty {
+    type Err = anyhow::Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (k, v) = s.split_once('=').context("Invalid line")?;
+        let v = v.trim();
+        Ok(match k.trim() {
+            "FREQUENCY" => dtv_property_parse!(DTV_FREQUENCY(v)),
+            "MODULATION" => dtv_property_parse!(DTV_MODULATION(v)),
+            "BANDWIDTH_HZ" => dtv_property_parse!(DTV_BANDWIDTH_HZ(v)),
+            "INVERSION" => dtv_property_parse!(DTV_INVERSION(v)),
+            "SYMBOL_RATE" => dtv_property_parse!(DTV_SYMBOL_RATE(v)),
+            "INNER_FEC" => dtv_property_parse!(DTV_INNER_FEC(v)),
+            "VOLTAGE" => dtv_property_parse!(DTV_VOLTAGE(v)),
+            "TONE" => dtv_property_parse!(DTV_TONE(v)),
+            "PILOT" => dtv_property_parse!(DTV_PILOT(v)),
+            "ROLLOFF" => dtv_property_parse!(DTV_ROLLOFF(v)),
+
+            /* Basic enumeration set for querying unlimited capabilities */
+            "DELIVERY_SYSTEM" => dtv_property_parse!(DTV_DELIVERY_SYSTEM(v)),
+
+            /* ISDB-T and ISDB-Tsb */
+            "ISDBT_PARTIAL_RECEPTION" => dtv_property_parse!(DTV_ISDBT_PARTIAL_RECEPTION(v)),
+            "ISDBT_SOUND_BROADCASTING" => dtv_property_parse!(DTV_ISDBT_SOUND_BROADCASTING(v)),
+
+            "ISDBT_SB_SUBCHANNEL_ID" => dtv_property_parse!(DTV_ISDBT_SB_SUBCHANNEL_ID(v)),
+            "ISDBT_SB_SEGMENT_IDX" => dtv_property_parse!(DTV_ISDBT_SB_SEGMENT_IDX(v)),
+            "ISDBT_SB_SEGMENT_COUNT" => dtv_property_parse!(DTV_ISDBT_SB_SEGMENT_COUNT(v)),
+
+            "ISDBT_LAYERA_FEC" => dtv_property_parse!(DTV_ISDBT_LAYERA_FEC(v)),
+            "ISDBT_LAYERA_MODULATION" => dtv_property_parse!(DTV_ISDBT_LAYERA_MODULATION(v)),
+            "ISDBT_LAYERA_SEGMENT_COUNT" => dtv_property_parse!(DTV_ISDBT_LAYERA_SEGMENT_COUNT(v)),
+            "ISDBT_LAYERA_TIME_INTERLEAVING" => {
+                dtv_property_parse!(DTV_ISDBT_LAYERA_TIME_INTERLEAVING(v))
+            }
+
+            "ISDBT_LAYERB_FEC" => dtv_property_parse!(DTV_ISDBT_LAYERB_FEC(v)),
+            "ISDBT_LAYERB_MODULATION" => dtv_property_parse!(DTV_ISDBT_LAYERB_MODULATION(v)),
+            "ISDBT_LAYERB_SEGMENT_COUNT" => dtv_property_parse!(DTV_ISDBT_LAYERB_SEGMENT_COUNT(v)),
+            "ISDBT_LAYERB_TIME_INTERLEAVING" => {
+                dtv_property_parse!(DTV_ISDBT_LAYERB_TIME_INTERLEAVING(v))
+            }
+
+            "ISDBT_LAYERC_FEC" => dtv_property_parse!(DTV_ISDBT_LAYERC_FEC(v)),
+            "ISDBT_LAYERC_MODULATION" => dtv_property_parse!(DTV_ISDBT_LAYERC_MODULATION(v)),
+            "ISDBT_LAYERC_SEGMENT_COUNT" => dtv_property_parse!(DTV_ISDBT_LAYERC_SEGMENT_COUNT(v)),
+            "ISDBT_LAYERC_TIME_INTERLEAVING" => {
+                dtv_property_parse!(DTV_ISDBT_LAYERC_TIME_INTERLEAVING(v))
+            }
+
+            /* DVB-T/T2 */
+            "CODE_RATE_HP" => dtv_property_parse!(DTV_CODE_RATE_HP(v)),
+            "CODE_RATE_LP" => dtv_property_parse!(DTV_CODE_RATE_LP(v)),
+            "GUARD_INTERVAL" => dtv_property_parse!(DTV_GUARD_INTERVAL(v)),
+            "TRANSMISSION_MODE" => dtv_property_parse!(DTV_TRANSMISSION_MODE(v)),
+            "HIERARCHY" => dtv_property_parse!(DTV_HIERARCHY(v)),
+
+            "ISDBT_LAYER_ENABLED" => dtv_property_parse!(DTV_ISDBT_LAYER_ENABLED(v)),
+
+            "STREAM_ID" => dtv_property_parse!(DTV_STREAM_ID(v)),
+
+            /* ATSC-MH */
+            "ATSCMH_FIC_VER" => dtv_property_parse!(DTV_ATSCMH_FIC_VER(v)),
+            "ATSCMH_PARADE_ID" => dtv_property_parse!(DTV_ATSCMH_PARADE_ID(v)),
+            "ATSCMH_NOG" => dtv_property_parse!(DTV_ATSCMH_NOG(v)),
+            "ATSCMH_TNOG" => dtv_property_parse!(DTV_ATSCMH_TNOG(v)),
+            "ATSCMH_SGN" => dtv_property_parse!(DTV_ATSCMH_SGN(v)),
+            "ATSCMH_PRC" => dtv_property_parse!(DTV_ATSCMH_PRC(v)),
+
+            "INTERLEAVING" => dtv_property_parse!(DTV_INTERLEAVING(v)),
+            "LNA" => dtv_property_parse!(DTV_LNA(v)),
+            &_ => bail!("Invalid key {}", k),
+        })
+    }
 }
 
 /// num of properties cannot exceed DTV_IOCTL_MAX_MSGS per ioctl

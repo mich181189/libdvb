@@ -4,6 +4,7 @@
 //! The session layer uses a Session Protocol Data Unit (SPDU) structure
 //! to exchange data at session level either from the host to the module
 //! or from the module to the host.
+#![allow(dead_code)]
 
 use {
     super::{apdu, tpdu, CaDevice},
