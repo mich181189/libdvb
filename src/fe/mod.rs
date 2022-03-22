@@ -82,16 +82,16 @@ impl AsRawFd for FeDevice {
 
 #[macro_export]
 macro_rules! get_dtv_properties {
-    ( $device:expr, $( $property:ident ),+ ) => { (|| -> anyhow::Result<_> {
+    ( $device:expr, $( $property:ident ),+ ) => { (|| -> ::anyhow::Result<_> {
         let mut input = [ $( $property(DtvPropertyRequest::default()), )* ];
-        $device.get_properties(&mut input)?;
+        $device.get_properties(&mut input).context("Error fetching properties")?;
         let mut iterator = input.iter();
         Ok((
             $(
                 match iterator.next() {
                     Some($property(d)) => d.get(),
-                    _ => ::anyhow::Result::Err(anyhow!("Error unpacking")),
-                }?,
+                    _ => ::anyhow::Result::Err(anyhow!("Missing value")),
+                }.with_context(|| format!("Error unpacking {}", stringify!($property)))?,
             )*
         ))
     })()}

@@ -868,7 +868,7 @@ macro_rules! dtv_property {
 #[macro_export]
 macro_rules! dtv_property_parse {
     ( $property:ident($data:expr)) => {
-        $property(DtvPropertyRequest::new($data.parse().context(format!("Invalid {}: {}", stringify!($property), $data))?))
+        $property(DtvPropertyRequest::new($data.parse().with_context(||format!("Invalid {}: {}", stringify!($property), $data))?))
     };
 }
 
