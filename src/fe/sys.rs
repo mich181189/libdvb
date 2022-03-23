@@ -591,7 +591,7 @@ impl WrappedSlice<DtvStat> for DtvFrontendStats {
     }
 }
 
-impl fmt::Debug for DtvFrontendStats {
+impl Debug for DtvFrontendStats {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_list().entries(self.slice().into_iter()).finish()
     }
@@ -638,7 +638,7 @@ impl WrappedSlice<u8> for DtvPropertyBuffer {
     }
 }
 
-impl fmt::Debug for DtvPropertyBuffer {
+impl Debug for DtvPropertyBuffer {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_list().entries(self.slice().into_iter()).finish()
     }
@@ -699,7 +699,7 @@ impl<T: Copy + Debug> WrappedResult<T> for DtvPropertyRequestInt<T> {
 
 impl<T: Copy + Debug> Debug for DtvPropertyRequestInt<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.get().fmt(f)
+        self.get().unwrap().fmt(f)
     }
 }
 
