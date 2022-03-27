@@ -2,7 +2,7 @@ use crate::get_dtv_properties;
 
 use {
     super::{sys::*, FeDevice},
-    anyhow::{Context, Result},
+    anyhow::{Result},
     std::fmt,
 };
 

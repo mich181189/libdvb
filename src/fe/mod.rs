@@ -83,15 +83,15 @@ impl AsRawFd for FeDevice {
 #[macro_export]
 macro_rules! get_dtv_properties {
     ( $device:expr, $( $property:ident ),+ ) => { (|| -> ::anyhow::Result<_> {
-        let mut input = [ $( $property(DtvPropertyRequest::default()), )* ];
-        $device.get_properties(&mut input).context("Error fetching properties")?;
+        let mut input = [ $( $property($crate::fe::sys::DtvPropertyRequest::default()), )* ];
+        ::anyhow::Context::context($device.get_properties(&mut input), "Error fetching properties")?;
         let mut iterator = input.iter();
         Ok((
             $(
-                match iterator.next() {
+                ::anyhow::Context::with_context(match iterator.next() {
                     Some($property(d)) => d.get(),
-                    _ => ::anyhow::Result::Err(anyhow!("Missing value")),
-                }.with_context(|| format!("Error unpacking {}", stringify!($property)))?,
+                    _ => ::anyhow::Result::Err(::anyhow::anyhow!("Missing value")),
+                }, || format!("Error unpacking {}", stringify!($property)))?,
             )*
         ))
     })()}
@@ -101,7 +101,7 @@ macro_rules! get_dtv_properties {
 macro_rules! set_dtv_properties {
     ( $device:expr, $( $property:ident($data:expr) ),+ ) => {
         $device.set_properties(&[
-            $(  $property(DtvPropertyRequest::new($data)), )*
+            $( $property($crate::fe::sys::DtvPropertyRequest::new($data)), )*
         ])
     };
 }
