@@ -1,7 +1,7 @@
 [package]
 name = "libdvb-rs"
-version = "0.4.3"
-description = "Safer pure-Rust interface for DVB-API v5 devices in Linux"
+version = "0.4.4"
+description = "Safer and feature-complete pure-Rust interface for DVB-API v5 devices in Linux"
 authors = ["Cesbo Developers Team <info@cesbo.com>", "Daniil Gentili <daniil@daniil.it>"]
 license = "MIT"
 readme = "README.md"

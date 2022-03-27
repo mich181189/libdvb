@@ -1,127 +1,154 @@
-use {
-    crate::ioctl::{
-        IoctlInt,
-        io_none,
-        io_write,
-    },
-};
-
+use bitflags::bitflags;
+use strum::FromRepr;
 
 pub use {
-    dmx_output::*,
-    dmx_input::*,
-    dmx_ts_pes::*,
-    dmx_filter_flags::*,
+    DmxOutput::*,
+    DmxInput::*,
+    DmxTsPes::*,
 };
 
 
 /// Output for the demux
-mod dmx_output {
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, FromRepr)]
+pub enum DmxOutput {
     /// Streaming directly to decoder
-    pub const DMX_OUT_DECODER: u32              = 0;
+    DMX_OUT_DECODER = 0,
     /// Output going to a memory buffer (to be retrieved via the read command).
     /// Delivers the stream output to the demux device on which the ioctl
     /// is called.
-    pub const DMX_OUT_TAP: u32                  = 1;
+    DMX_OUT_TAP = 1,
     /// Output multiplexed into a new TS (to be retrieved by reading from the
     /// logical DVR device). Routes output to the logical DVR device
     /// `/dev/dvb/adapter?/dvr?`, which delivers a TS multiplexed from all
     /// filters for which DMX_OUT_TS_TAP was specified.
-    pub const DMX_OUT_TS_TAP: u32               = 2;
+    DMX_OUT_TS_TAP = 2,
     /// Like DMX_OUT_TS_TAP but retrieved from the DMX device.
-    pub const DMX_OUT_TSDEMUX_TAP: u32          = 3;
+    DMX_OUT_TSDEMUX_TAP = 3
 }
 
 
 /// Input from the demux
-mod dmx_input {
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, FromRepr)]
+pub enum DmxInput {
     /// Input from a front-end device
-    pub const DMX_IN_FRONTEND: u32              = 0;
+    DMX_IN_FRONTEND = 0,
     /// Input from the logical DVR device
-    pub const DMX_IN_DVR: u32                   = 1;
+    DMX_IN_DVR = 1
 }
 
 
 /// type of the PES filter
-mod dmx_ts_pes {
+#[repr(u32)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, FromRepr)]
+pub enum DmxTsPes {
     /// first audio PID
-    pub const DMX_PES_AUDIO0: u32               = 0;
+    DMX_PES_AUDIO0               = 0,
     /// first video PID
-    pub const DMX_PES_VIDEO0: u32               = 1;
+    DMX_PES_VIDEO0               = 1,
     /// first teletext PID
-    pub const DMX_PES_TELETEXT0: u32            = 2;
+    DMX_PES_TELETEXT0            = 2,
     /// first subtitle PID
-    pub const DMX_PES_SUBTITLE0: u32            = 3;
+    DMX_PES_SUBTITLE0            = 3,
     /// first Program Clock Reference PID
-    pub const DMX_PES_PCR0: u32                 = 4;
+    DMX_PES_PCR0                 = 4,
 
     /// second audio PID.
-    pub const DMX_PES_AUDIO1: u32               = 5;
+    DMX_PES_AUDIO1               = 5,
     /// second video PID.
-    pub const DMX_PES_VIDEO1: u32               = 6;
+    DMX_PES_VIDEO1               = 6,
     /// second teletext PID.
-    pub const DMX_PES_TELETEXT1: u32            = 7;
+    DMX_PES_TELETEXT1            = 7,
     /// second subtitle PID.
-    pub const DMX_PES_SUBTITLE1: u32            = 8;
+    DMX_PES_SUBTITLE1            = 8,
     /// second Program Clock Reference PID.
-    pub const DMX_PES_PCR1: u32                 = 9;
+    DMX_PES_PCR1                 = 9,
 
     /// third audio PID.
-    pub const DMX_PES_AUDIO2: u32               = 10;
+    DMX_PES_AUDIO2               = 10,
     /// third video PID.
-    pub const DMX_PES_VIDEO2: u32               = 11;
+    DMX_PES_VIDEO2               = 11,
     /// third teletext PID.
-    pub const DMX_PES_TELETEXT2: u32            = 12;
+    DMX_PES_TELETEXT2            = 12,
     /// third subtitle PID.
-    pub const DMX_PES_SUBTITLE2: u32            = 13;
+    DMX_PES_SUBTITLE2            = 13,
     /// third Program Clock Reference PID.
-    pub const DMX_PES_PCR2: u32                 = 14;
+    DMX_PES_PCR2                 = 14,
 
     /// fourth audio PID.
-    pub const DMX_PES_AUDIO3: u32               = 15;
+    DMX_PES_AUDIO3               = 15,
     /// fourth video PID.
-    pub const DMX_PES_VIDEO3: u32               = 16;
+    DMX_PES_VIDEO3               = 16,
     /// fourth teletext PID.
-    pub const DMX_PES_TELETEXT3: u32            = 17;
+    DMX_PES_TELETEXT3            = 17,
     /// fourth subtitle PID.
-    pub const DMX_PES_SUBTITLE3: u32            = 18;
+    DMX_PES_SUBTITLE3            = 18,
     /// fourth Program Clock Reference PID.
-    pub const DMX_PES_PCR3: u32                 = 19;
+    DMX_PES_PCR3                 = 19,
 
     /// any other PID.
-    pub const DMX_PES_OTHER: u32                = 20;
+    DMX_PES_OTHER                = 20,
 }
 
 
-/// Flags for the demux filter
-mod dmx_filter_flags {
-    /// Only deliver sections where the CRC check succeeded
-    pub const DMX_CHECK_CRC: u32                = 1;
-    /// Disable the section filter after one section has been delivered
-    pub const DMX_ONESHOT: u32                  = 2;
-    /// Start filter immediately without requiring a `DMX_START`
-    pub const DMX_IMMEDIATE_START: u32          = 4;
+bitflags! {
+    /// Flags for the demux filter
+    #[repr(C)]
+    pub struct DmxFilterFlags : u32 {
+        /// Only deliver sections where the CRC check succeeded
+        const DMX_CHECK_CRC                = 1;
+        /// Disable the section filter after one section has been delivered
+        const DMX_ONESHOT                  = 2;
+        /// Start filter immediately without requiring a `DMX_START`
+        const DMX_IMMEDIATE_START          = 4;
+    }
 }
 
 
 /// Specifies Packetized Elementary Stream (PES) filter parameters
 #[repr(C)]
-#[derive(Default, Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct DmxPesFilterParams {
     /// PID to be filtered. 8192 to pass all PID's
     pub pid: u16,
     /// Demux input, as specified by `DMX_IN_*`
-    pub input: u32,
+    pub input: DmxInput,
     /// Demux output, as specified by `DMX_OUT_*`
-    pub output: u32,
+    pub output: DmxOutput,
     /// Type of the pes filter, as specified by `DMX_PES_*`
-    pub pes_type: u32,
+    pub pes_type: DmxTsPes,
     /// Demux PES flags
-    pub flags: u32,
+    pub flags: DmxFilterFlags,
 }
 
+pub const DMX_FILTER_SIZE: usize = 16;
 
-pub const DMX_START: IoctlInt = io_none(b'o', 41);
-pub const DMX_STOP: IoctlInt = io_none(b'o', 42);
-pub const DMX_SET_PES_FILTER: IoctlInt = io_write::<DmxPesFilterParams>(b'o', 44);
-pub const DMX_SET_BUFFER_SIZE: IoctlInt = io_none(b'o', 45);
+/// Specifies demux section header filter parameters
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct DmxFilter {
+    /// Bit array with bits to be matched at the section header
+    pub filter: [u8; DMX_FILTER_SIZE],
+    /// Bits that are valid at the filter bit array
+    pub mask: [u8; DMX_FILTER_SIZE],
+    /// Mode of match: if bit is zero, it will match if equal (positive match); if bit is one, it will match if the bit is negated.
+    pub mode: [u8; DMX_FILTER_SIZE],
+}
+
+/// Specifies Section header (SCT) filter parameters
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct DmxSctFilterParams {
+    /// PID to be filtered. 8192 to pass all PID's
+    pub pid: u16,
+    /// Section header filter, as defined by DmxFilter
+    pub filter: DmxFilter,
+    /// Maximum time to filter, in milliseconds
+    pub timeout: u32,
+    /// Extra flags for the section filter, as specified by DmxFilterFlags
+    pub flags: DmxFilterFlags
+}
