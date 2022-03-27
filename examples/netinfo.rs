@@ -1,6 +1,6 @@
 use {
     anyhow::{bail, Context, Result},
-    libdvb::NetDevice,
+    libdvb_rs::NetDevice,
 };
 
 fn main() -> Result<()> {
@@ -18,7 +18,7 @@ fn main() -> Result<()> {
 
     let dev = NetDevice::open(adapter, device)?;
 
-    let interface = dev.add_if(0, libdvb::net::sys::DVB_NET_FEEDTYPE_MPE)?;
+    let interface = dev.add_if(0, libdvb_rs::net::sys::DVB_NET_FEEDTYPE_MPE)?;
     println!("Interface: {}", &interface);
     let mac = interface.get_mac();
     println!("MAC: {}", &mac);

@@ -1,6 +1,6 @@
 use {
     anyhow::{bail, Context, Result},
-    libdvb::{FeDevice, FeStatus},
+    libdvb_rs::{FeDevice, FeStatus},
 };
 
 fn main() -> Result<()> {

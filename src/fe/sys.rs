@@ -863,6 +863,9 @@ macro_rules! dtv_property {
     ( $property:ident($data:expr) ) => {
         $property(DtvPropertyRequest::new($data))
     };
+    ( $property:ident, $data:expr ) => {
+        $property(DtvPropertyRequest::new($data))
+    };
 }
 
 #[macro_export]
