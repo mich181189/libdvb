@@ -199,18 +199,18 @@ impl FeStatus {
     }
 
     fn normalize_snr(&mut self, stats: DtvFrontendStats) {
-        self.signal_strength_decibel = stats.get_decibel_float();
-        self.signal_strength_percentage = match (stats.get_relative(), stats.get_decibel()) {
+        self.snr_decibel = stats.get_decibel_float();
+        self.snr_percentage = match (stats.get_relative(), stats.get_decibel()) {
             (Some(v), _) => Some(((v as u32) * 100 / 65535) as u8),
             (None, Some(decibel)) if self.status.contains(fe_status::FE_HAS_CARRIER) => {
                 match match self.delivery_system {
-                    Some(SYS_DVBS | SYS_DVBS2) => Some(15000),
+                    Some(SYS_DVBS) | Some(SYS_DVBS2) => Some(15000),
 
-                    Some(SYS_DVBC_ANNEX_A | SYS_DVBC_ANNEX_B | SYS_DVBC_ANNEX_C | SYS_DVBC2) => {
+                    Some(SYS_DVBC_ANNEX_A) | Some(SYS_DVBC_ANNEX_B) | Some(SYS_DVBC_ANNEX_C) | Some(SYS_DVBC2) => {
                         Some(28000)
                     }
 
-                    Some(SYS_DVBT | SYS_DVBT2) => Some(19000),
+                    Some(SYS_DVBT) | Some(SYS_DVBT2) => Some(19000),
 
                     Some(SYS_ATSC) => Some(match self.modulation {
                         Some(VSB_8 | VSB_16) => 19000,
@@ -252,12 +252,12 @@ impl FeStatus {
         self.normalize_snr(snr);
         self.ber = match ber.get_counter() {
             Some(v) => Some(v),
-            None if self.status.contains(fe_status::FE_HAS_LOCK) => Some(fe.read_ber()?),
+            None if self.status.contains(fe_status::FE_HAS_LOCK) => fe.read_ber().ok(),
             None => None,
         };
         self.unc = match unc.get_counter() {
             Some(v) => Some(v),
-            None if self.status.contains(fe_status::FE_HAS_LOCK) => Some(fe.read_unc()?),
+            None if self.status.contains(fe_status::FE_HAS_LOCK) => fe.read_unc().ok(),
             None => None,
         };
 

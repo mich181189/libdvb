@@ -860,18 +860,21 @@ pub enum DtvProperty {
 
 #[macro_export]
 macro_rules! dtv_property {
+    ( $property:ident ) => {
+        $property($crate::fe::sys::DtvPropertyRequest::new(()))
+    };
     ( $property:ident($data:expr) ) => {
-        $property(DtvPropertyRequest::new($data))
+        $property($crate::fe::sys::DtvPropertyRequest::new($data))
     };
     ( $property:ident, $data:expr ) => {
-        $property(DtvPropertyRequest::new($data))
+        $property($crate::fe::sys::DtvPropertyRequest::new($data))
     };
 }
 
 #[macro_export]
 macro_rules! dtv_property_parse {
     ( $property:ident($data:expr)) => {
-        $property(DtvPropertyRequest::new($data.parse().with_context(||format!("Invalid {}: {}", stringify!($property), $data))?))
+        $property($crate::fe::sys::DtvPropertyRequest::new($data.parse().with_context(||format!("Invalid {}: {}", stringify!($property), $data))?))
     };
 }
 
