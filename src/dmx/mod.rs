@@ -18,6 +18,7 @@ pub mod sys;
 #[derive(Debug)]
 pub struct DmxDevice {
     file: File,
+    buffer_size: u32
 }
 
 impl AsRawFd for DmxDevice {
@@ -39,6 +40,7 @@ impl DmxDevice {
 
         Ok(DmxDevice {
             file,
+            buffer_size: 2 * 4096
         })
     }
 
@@ -140,7 +142,7 @@ impl DmxDevice {
     /// Attempts to set the size of the circular buffer used for filtered data.
     /// The default size is two maximum sized sections, 
     /// i.e. if this function is not called a buffer size of 2 * 4096 bytes will be used.
-    pub fn set_buffer_size(&self, size: u32) -> Result<()> {
+    pub fn set_buffer_size(&mut self, size: u32) -> Result<()> {
         // DMX_SET_BUFFER_SIZE
         ioctl_write_int_bad!(
             #[inline]
@@ -149,6 +151,8 @@ impl DmxDevice {
         );
 
         unsafe { ioctl_call(self.as_raw_fd(), size as _) }.context("DMX: set buffer size")?;
+
+        self.buffer_size = size;
 
         Ok(())
     }
