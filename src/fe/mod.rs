@@ -101,7 +101,7 @@ macro_rules! get_dtv_properties {
 macro_rules! set_dtv_properties {
     ( $device:expr, $( $property:ident($data:expr) ),+ ) => {
         $device.set_properties(&[
-            $( $property($crate::fe::sys::DtvPropertyRequest::new($data)), )*
+            $( $crate::dtv_property!($property($data)), )*
         ])
     };
 }

@@ -1,5 +1,7 @@
 use anyhow::Context;
+use std::convert::TryFrom;
 use std::fmt::Debug;
+use std::marker::PhantomData;
 use std::str::FromStr;
 use std::{fmt, mem};
 
@@ -194,6 +196,12 @@ pub enum fe_sec_voltage {
     SEC_VOLTAGE_OFF = 2,
 }
 
+impl Into<u32> for fe_sec_voltage {
+    fn into(self) -> u32 {
+        self as u32
+    }
+}
+
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 #[derive(EnumString, Debug, Copy, Clone, PartialEq, Eq, FromRepr)]
@@ -202,6 +210,12 @@ pub enum fe_sec_tone_mode {
     SEC_TONE_ON = 0,
     /// Don't send a 22kHz tone to the antenna (except if the FE_DISEQC_* ioctl are called)
     SEC_TONE_OFF = 1,
+}
+
+impl Into<u32> for fe_sec_tone_mode {
+    fn into(self) -> u32 {
+        self as u32
+    }
 }
 
 /// Type of mini burst to be sent
@@ -213,6 +227,12 @@ pub enum fe_sec_mini_cmd {
     SEC_MINI_A = 0,
     /// Sends a mini-DiSEqC 22kHz '1' Data Burst to select satellite-B
     SEC_MINI_B = 1,
+}
+
+impl Into<u32> for fe_sec_mini_cmd {
+    fn into(self) -> u32 {
+        self as u32
+    }
 }
 
 bitflags! {
@@ -252,6 +272,12 @@ pub enum fe_spectral_inversion {
     INVERSION_AUTO = 2,
 }
 
+impl Into<u32> for fe_spectral_inversion {
+    fn into(self) -> u32 {
+        self as u32
+    }
+}
+
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 #[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Clone, Copy)]
@@ -289,6 +315,11 @@ pub enum fe_code_rate {
     FEC_1_3 = 14,
 }
 
+impl Into<u32> for fe_code_rate {
+    fn into(self) -> u32 {
+        self as u32
+    }
+}
 /// Type of modulation/constellation
 #[repr(u32)]
 #[allow(non_camel_case_types)]
@@ -329,6 +360,11 @@ pub enum fe_modulation {
     APSK_256 = 16,
 }
 
+impl Into<u32> for fe_modulation {
+    fn into(self) -> u32 {
+        self as u32
+    }
+}
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 #[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
@@ -353,6 +389,11 @@ pub enum fe_transmit_mode {
     TRANSMISSION_MODE_C3780 = 8,
 }
 
+impl Into<u32> for fe_transmit_mode {
+    fn into(self) -> u32 {
+        self as u32
+    }
+}
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 #[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
@@ -381,6 +422,12 @@ pub enum fe_guard_interval {
     GUARD_INTERVAL_PN945 = 10,
 }
 
+impl Into<u32> for fe_guard_interval {
+    fn into(self) -> u32 {
+        self as u32
+    }
+}
+
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 #[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
@@ -397,6 +444,12 @@ pub enum fe_hierarchy {
     HIERARCHY_AUTO = 4,
 }
 
+impl Into<u32> for fe_hierarchy {
+    fn into(self) -> u32 {
+        self as u32
+    }
+}
+
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 #[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
@@ -411,6 +464,12 @@ pub enum fe_interleaving {
     INTERLEAVING_720 = 3,
 }
 
+impl Into<u32> for fe_interleaving {
+    fn into(self) -> u32 {
+        self as u32
+    }
+}
+
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 #[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
@@ -420,6 +479,11 @@ pub enum fe_pilot {
     PILOT_AUTO = 2,
 }
 
+impl Into<u32> for fe_pilot {
+    fn into(self) -> u32 {
+        self as u32
+    }
+}
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 #[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
@@ -431,6 +495,12 @@ pub enum fe_rolloff {
     ROLLOFF_15 = 4,
     ROLLOFF_10 = 5,
     ROLLOFF_5 = 6,
+}
+
+impl Into<u32> for fe_rolloff {
+    fn into(self) -> u32 {
+        self as u32
+    }
 }
 
 #[derive(EnumString, Display, FromRepr, Debug, Copy, Clone)]
@@ -480,6 +550,12 @@ pub enum fe_delivery_system {
     SYS_DVBC2 = 19,
 }
 
+impl Into<u32> for fe_delivery_system {
+    fn into(self) -> u32 {
+        self as u32
+    }
+}
+
 #[repr(u32)]
 #[allow(non_camel_case_types)]
 #[derive(EnumString, Debug, PartialEq, Eq, FromRepr, Copy, Clone)]
@@ -487,6 +563,12 @@ pub enum fe_lna {
     LNA_OFF = 0,
     LNA_ON = 1,
     LNA_AUTO = 0xFFFFFFFF,
+}
+
+impl Into<u32> for fe_lna {
+    fn into(self) -> u32 {
+        self as u32
+    }
 }
 
 // From here on, structures passed to Linux
@@ -497,6 +579,7 @@ pub trait WrappedSlice<T> {
 pub trait WrappedResult<T> {
     fn get(&self) -> anyhow::Result<T>;
 }
+
 
 pub trait DtvStatType {
     fn get_decibel(&self) -> Option<i64>;
@@ -647,14 +730,15 @@ impl Debug for DtvPropertyBuffer {
 const DATA_SIZE: usize = 56;
 
 #[repr(C, packed)]
-pub struct DtvPropertyRequest<T, const N: usize> {
+pub struct DtvPropertyRequest<T, TFake, const N: usize> {
     __reserved: [u32; 3],
     data: T,
     padding: [u8; N],
     result: i32, // Unused
+    fake: PhantomData<TFake>
 }
 
-impl<T, const N: usize> DtvPropertyRequest<T, N> {
+impl<T, TFake, const N: usize> DtvPropertyRequest<T, TFake, N> {
     #[inline]
     pub fn new(data: T) -> Self {
         Self {
@@ -662,18 +746,19 @@ impl<T, const N: usize> DtvPropertyRequest<T, N> {
             data,
             padding: [0; N],
             result: 0,
+            fake: PhantomData
         }
     }
 }
 
-impl<T, const N: usize> Default for DtvPropertyRequest<T, N> {
+impl<T, TFake, const N: usize> Default for DtvPropertyRequest<T, TFake, N> {
     #[inline]
     fn default() -> Self {
         unsafe { mem::zeroed::<Self>() }
     }
 }
 
-pub type DtvPropertyRequestVoid = DtvPropertyRequest<(), DATA_SIZE>;
+pub type DtvPropertyRequestVoid = DtvPropertyRequest<(), (), DATA_SIZE>;
 
 impl WrappedResult<()> for DtvPropertyRequestVoid {
     #[inline]
@@ -688,22 +773,22 @@ impl Debug for DtvPropertyRequestVoid {
     }
 }
 
-pub type DtvPropertyRequestInt<T> = DtvPropertyRequest<T, { DATA_SIZE - 4 }>;
+pub type DtvPropertyRequestInt<T> = DtvPropertyRequest<u32, T, { DATA_SIZE - 4 }>;
 
-impl<T: Copy + Debug> WrappedResult<T> for DtvPropertyRequestInt<T> {
+impl<Err: 'static + std::error::Error + Send + Sync, T: Copy + Debug + TryFrom<u32, Error = Err>> WrappedResult<T> for DtvPropertyRequestInt<T> {
     #[inline]
     fn get(&self) -> anyhow::Result<T> {
-        Ok(self.data)
+        Context::with_context(T::try_from(self.data), ||format!("Got invalid value when extracting {}", stringify!(T)))
     }
 }
 
-impl<T: Copy + Debug> Debug for DtvPropertyRequestInt<T> {
+impl<Err: 'static + std::error::Error + Send + Sync, T: Copy + Debug + TryFrom<u32, Error = Err>> Debug for DtvPropertyRequestInt<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.get().unwrap().fmt(f)
     }
 }
 
-pub type DtvPropertyRequestFrontendStats = DtvPropertyRequest<DtvFrontendStats, { DATA_SIZE - 37 }>;
+pub type DtvPropertyRequestFrontendStats = DtvPropertyRequest<DtvFrontendStats, DtvFrontendStats, { DATA_SIZE - 37 }>;
 
 impl WrappedResult<DtvFrontendStats> for DtvPropertyRequestFrontendStats {
     #[inline]
@@ -719,7 +804,7 @@ impl Debug for DtvPropertyRequestFrontendStats {
 }
 
 pub type DtvPropertyRequestDeliverySystems =
-    DtvPropertyRequest<DtvPropertyBuffer, { DATA_SIZE - 4 - 32 }>;
+    DtvPropertyRequest<DtvPropertyBuffer, Vec<fe_delivery_system>, { DATA_SIZE - 4 - 32 }>;
 
 impl WrappedResult<Vec<fe_delivery_system>> for DtvPropertyRequestDeliverySystems {
     #[inline]
@@ -861,13 +946,13 @@ pub enum DtvProperty {
 #[macro_export]
 macro_rules! dtv_property {
     ( $property:ident ) => {
-        $property($crate::fe::sys::DtvPropertyRequest::new(()))
+        dtv_property!($property, ())
     };
     ( $property:ident($data:expr) ) => {
-        $property($crate::fe::sys::DtvPropertyRequest::new($data))
+        dtv_property!($property, $data)
     };
     ( $property:ident, $data:expr ) => {
-        $property($crate::fe::sys::DtvPropertyRequest::new($data))
+        $property($crate::fe::sys::DtvPropertyRequest::new($data.into()))
     };
 }
 
@@ -877,6 +962,9 @@ macro_rules! dtv_property_parse {
         $property($crate::fe::sys::DtvPropertyRequest::new($data.parse().with_context(||format!("Invalid {}: {}", stringify!($property), $data))?))
     };
 }
+
+pub(crate) use dtv_property;
+pub(crate) use dtv_property_parse;
 
 impl FromStr for DtvProperty {
     type Err = anyhow::Error;
