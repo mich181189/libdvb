@@ -121,7 +121,7 @@ pub struct FeInfo {
     pub symbol_rate_tolerance: u32,
     /// DEPRECATED
     pub notifier_delay: u32,
-    /// Capabilities supported by the frontend
+    /// capabilities supported by the frontend
     pub caps: fe_caps,
 }
 
@@ -510,7 +510,7 @@ impl Into<u32> for fe_rolloff {
 pub enum fe_delivery_system {
     #[strum(to_string = "none")]
     SYS_UNDEFINED = 0,
-    #[strum(to_string = "dbvc/annex_a")]
+    #[strum(to_string = "dvbc/annex_a")]
     SYS_DVBC_ANNEX_A = 1,
     #[strum(to_string = "dvbc/annex_b")]
     SYS_DVBC_ANNEX_B = 2,
