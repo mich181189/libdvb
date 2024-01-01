@@ -533,4 +533,31 @@ impl FeDevice {
     pub fn get_api_version(&self) -> u16 {
         self.api_version
     }
+
+    /// Returns the name of the device
+    #[inline]
+    pub fn get_name(&self) -> String {
+        self.name.clone()
+    }
+
+    #[inline]
+    pub fn get_delivery_system_list(&self) -> &Vec<fe_delivery_system> {
+        &self.delivery_system_list
+    }
+
+    #[inline]
+    pub fn get_frequency_range(&self) -> Range<u32> {
+        self.frequency_range.clone()
+    }
+
+    #[inline]
+    pub fn get_symbolrate_range(&self) -> Range<u32> {
+        self.symbolrate_range.clone()
+    }
+
+    #[inline]
+    pub fn get_caps(&self) -> fe_caps {
+        self.caps
+    }
+
 }
