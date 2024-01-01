@@ -813,7 +813,7 @@ impl WrappedResult<Vec<fe_delivery_system>> for DtvPropertyRequestDeliverySystem
             .slice()
             .into_iter()
             .map(|&x| fe_delivery_system::from_repr(x as u32).context("Invalid delivery system"))
-            .try_collect()
+            .collect()
     }
 }
 

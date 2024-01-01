@@ -1,4 +1,3 @@
-#![feature(iterator_try_collect)]
 #[macro_use]
 extern crate anyhow;
 
