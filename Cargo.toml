@@ -14,6 +14,6 @@ edition = "2018"
 [dependencies]
 nix = "^0.23"
 anyhow = "^1.0"
-strum = { git = "https://github.com/danog/strum", features = ["derive"] }
+strum = { git = "https://github.com/mich181189/strum", features = ["derive"] }
 bitflags = "^1.3.2"
 itertools = "^0.10.2"
